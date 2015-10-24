@@ -1,0 +1,122 @@
+<?php
+
+use Drupal\Component\Utility\Html;
+
+/**
+ * Preprocess variables for html templates.
+ */
+
+// Add 'my-class' to all pages.
+function acme_preprocess_html(&$variables) {
+	$variables['attributes']['class'][] = 'my-class';
+
+	// This is 'global $them in D7'
+	$theme = \Drupal::theme()->getActiveTheme()->getname();
+
+	$regions = system_region_list($theme);
+
+	foreach ($regions as $region => $region_name) {
+		$region_class = Html::getClass($region);
+		if (!empty($variables['page'][$region])) {
+			$variables['attributes']['class'][] = $region_class . '-active';
+		}
+	}
+}
+// */
+
+/**
+ * Preprocess variables for page templates.
+ */
+
+function acme_preprocess_page(&$variables) {
+	$variables['copyright'] = t("Copyright &copy; @date Cloverfield" ,
+	array ('@date' => date('Y'))
+	);
+	$variables['copyright_holder'] = '';
+	$name = \Drupal::config('system.site')->get('name');
+	$copyright_holder = theme_get_setting('copyright');
+	if (!empty($name) || !empty($copyright_holder)) {
+		$name = !empty($copyright_holder) ? $copyright_holder : $name;
+		$variables['copyright_holder'] = $name;
+	}
+}
+/**
+ * Preprocess variables for field templates.
+ */
+/* -- Delete this line if you want to use this function
+function acme_preprocess_field(&$variables) {
+}
+// */
+
+/**
+ * Preprocess variables for node templates.
+ */
+function acme_preprocess_node(&$variables) {
+	// Set shortcut variables. Hooray for less typing!
+	$type = $variables['type'];
+
+	$function = __FUNCTION__ . '__' . $type;
+	if (function_exists($function)) {
+		$function($variables);
+	}
+}
+// New function to control all articles.
+function acme_preprocess_node__article(&$variables) {
+	// Set shortcut variables. Hooray for less typing!
+	$mode = $variables['view_mode'];
+
+	if ($mode == 'teaser') {
+		kint('I work for article teasers');
+		//Code for article teasers here
+	}
+	if ($mode == 'full') {
+		kint('I work for full articles');
+		//Code for full page articles here
+	}
+}
+// 
+
+/**
+ * Preprocess variables for comment templates.
+ */
+/* -- Delete this line if you want to use this function
+function acme_preprocess_comment(&$variables) {
+}
+// */
+
+/**
+ * Preprocess variables for block templates.
+ */
+/* -- Delete this line if you want to use this function
+function acme_preprocess_block(&$variables) {
+}
+// */
+
+function acme_theme_suggestions_node_alter (&$suggestions, $variables, $hook) {
+	// our code will go here
+	if (\Drupal::currentUser()->isAuthenticated()) {
+		$bundle = $variables['elements']['#node']->bundle();
+		$mode = $variables['elements']['#view_mode'];
+		$view_mode = strtr($mode, '.', '_');
+
+		$suggestions[] = 'node__' . $bundle . '__logged_in';
+		$suggestions[] = 'node__' . $view_mode . '__logged_in';
+
+	}
+}
+
+function acme_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+	if ($form_id == 'search_block_form') {
+		// Add placeholder text
+		$form['keys']['#attributes']['placeholder'] = t('Search');
+	}
+}
+
+function acme_form_search_block_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+		// Add placeholder text from our theme settings
+		$search_placeholder = theme_get_setting('search_placeholder');
+		$placeholder = isset($search_placeholder) ? $search_placeholder : t('Search');
+		$form['keys']['#attributes']['placeholder'] = t('Search');
+		// Attach a library from our theme to a form
+		$form['#attached']['library'][] = 'acme/acme-search-form-js';
+}

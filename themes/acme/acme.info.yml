@@ -1,0 +1,28 @@
+name: Acme
+description: My first D8 theme
+type: theme
+base theme: classy
+core: 8.x
+version: VERSION
+
+regions:
+ header: Header
+ primary_menu: 'Primary menu'
+ seconday_menu: 'Secodary menu'
+ breadcrumb: Breadcrumb
+ help: Help
+ highlighted: Highlighted
+ content: Content
+ sidebar_first: 'Left Sidebar'
+ sidebar_second: 'Right Sidebar'
+ footer_top: 'Footer Top'
+ footer: Footer
+ page_top: 'Page Top'
+ page_bottom: 'Page Bottom'
+
+libraries:
+ - acme/css-stuff
+
+stylesheets-remove:
+ - core/assets/vendor/jquery.ui/themes/base/dialog.css
+ - '@class/css/components/breadcrumbs.css'
