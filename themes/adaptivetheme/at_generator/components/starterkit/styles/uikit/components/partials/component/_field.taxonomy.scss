@@ -1,24 +1,18 @@
 /**
- * Field Taxonomy Reference (Entity Reference as tags).
- *  - to have all taxonomy fields themed the same be sure to include the
- *    word "tags" somewhere in the field name.
- ============================================================================ */
+ * Field Taxonomy Reference
+ ========================================================================== */
 
-[class*="tags"].field-type-entity-reference {
+.field-type-taxonomy-term-reference {
+  //@include output-rhythm(margin, $medium 0);
 
   @if $field-taxonomy-label-as-icon == true {
     .field__label {
       &:before {
         font-family: $icon-font;
         content: $field-taxonomy-label-icon;
+        
+        display: inline-block;
         @include output-rhythm(margin, 0 $xx-small 0 0);
-
-        // Wait for FontAwesome to load.
-        display: none;
-
-        .fa-loaded & {
-          display: inline-block;
-        }
 
         // In left-to-right flip the icon.
         [dir="ltr"] & {
@@ -29,15 +23,16 @@
   }
 
   @if ($field-taxonomy-item-as-labels == true) {
-    .field__item-wrapper {
+    span {
       display: inline-block;
       margin: 0 $xxxx-small $xxxx-small 0; // LTR
       border: $border-width $border-style;
       border-radius: $border-radius;
-      @include output-rhythm(padding, 0 $xx-small);
+      @include output-rhythm(padding, 0 $small);
 
       &:hover,
-      &:focus {}
+      &:focus {
+      }
 
       a {
         display: inline-block;
@@ -56,22 +51,18 @@
   }
 
   @if ($field-taxonomy-item-icons == true) {
-    .field__item-wrapper {
+    span {
       display: inline-block;
 
       &:before {
         font-family: $icon-font;
         content: $field-taxonomy-item-icon;
+
         @include adjust-font-size-to($small);
-        @include output-rhythm(margin, 0 $xx-small 0 0); // LTR
+         @include output-rhythm(margin, 0 $xx-small 0 0); // LTR
+
+        display: inline-block;
         vertical-align: text-bottom;
-
-        // Wait for FontAwesome to load.
-        display: none;
-
-        .fa-loaded & {
-          display: inline-block;
-        }
 
         // In left-to-right flip the icon.
         [dir="ltr"] & {
@@ -104,16 +95,7 @@
   .field__item {
     margin: 0;
     padding: 0;
+    display: inline-block;
     list-style: none;
   }
-
-  .field-label-above {}
-
-  .field-label-inline {
-    .field__label,
-    .field__item {}
-  }
 }
-
-
-

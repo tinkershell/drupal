@@ -1,10 +1,7 @@
 <?php
 
 /**
- * @file
  * Validate form values.
- * @param $form
- * @param $form_state
  */
 function at_core_validate_extension_settings(&$form, &$form_state) {
   $build_info = $form_state->getBuildInfo();

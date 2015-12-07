@@ -7,7 +7,7 @@
 
 namespace Drupal\search_api\Plugin\views\argument;
 
-use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\taxonomy\Entity\Term;
 
 /**
@@ -80,14 +80,14 @@ class SearchApiTaxonomyTerm extends SearchApiArgument {
       foreach ($this->value as $tid) {
         $taxonomy_term = Term::load($tid);
         if ($taxonomy_term) {
-          $terms[] = Html::escape($taxonomy_term->label());
+          $terms[] = SafeMarkup::checkPlain($taxonomy_term->label());
         }
       }
 
-      return $terms ? implode(', ', $terms) : Html::escape($this->argument);
+      return $terms ? implode(', ', $terms) : SafeMarkup::checkPlain($this->argument);
     }
     else {
-      return Html::escape($this->argument);
+      return SafeMarkup::checkPlain($this->argument);
     }
   }
 

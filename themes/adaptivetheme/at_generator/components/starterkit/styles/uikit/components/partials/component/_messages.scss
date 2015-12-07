@@ -1,8 +1,7 @@
 /**
  * Messages
- * Style system messages such as status, warning and error.
- * Colors are kept here, we don't want these to shift in color module.
- ============================================================================ */
+ *  - style system messages such as status, warning and error.
+ ========================================================================== */
 
 .messages {
   word-wrap: break-word;
@@ -35,7 +34,7 @@
   }
 
   .item-list ul {
-    @include output-rhythm(margin, $large 0);
+    @include output-rhythm(margin, $large $xx-large);
 
     li {
       list-style: square;
@@ -44,7 +43,9 @@
 }
 
 
-// Success (status).
+// Messages colors are kept here, we don't want these to shift in color module.
+
+/* Success (status) */
 .messages--status,
 table tr.ok {
   background-color: $success-background-color;
@@ -57,7 +58,7 @@ table tr.ok {
 }
 
 
-// Warning.
+/* Warning */
 .messages--warning,
 table tr.warning {
   background-color: $warning-background-color;
@@ -70,7 +71,7 @@ table tr.warning {
 }
 
 
-// Error.
+/* Error */
 .messages--error,
 table tr.error {
   background-color: $error-background-color;
@@ -91,27 +92,19 @@ table tr.error {
 }
 
 
-// RTL.
+
+/* RTL */
 [dir="rtl"] .messages {
   text-align: right;
 }
 
 
-// Message icons.
-.messages .icon {
-  &:before {
-    font-family: $icon-font;
-    float: left;
-    vertical-align: top;
-    @include output-rhythm(padding, 0 $small 0 0);
-
-    // Wait for FontAwesome to load.
-    display: none;
-
-    .fa-loaded & {
-      display: block;
-    }
-  }
+/* Message icons */
+.messages .icon:before {
+  font-family: $icon-font;
+  float: left;
+  vertical-align: top;
+  @include output-rhythm(padding, 0 $small 0 0); // LTR
 }
 
 [dir="rtl"] .messages .icon:before {

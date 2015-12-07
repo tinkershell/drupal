@@ -12,10 +12,9 @@
         return;
       }
 
-      var activeTheme = settings['ajaxPageState']['theme'],
-          rm          = settings[activeTheme]['at_responsivemenus'],
-          def         = rm['default'],
-          resp        = rm['responsive'];
+      var rm = settings['at_rm'],
+          def = rm['default'],
+          resp = rm['responsive'];
 
       // Toggle handler.
       function toggleClick(e) {
@@ -34,9 +33,7 @@
       }
 
       // Toggle.
-      //$('.rm-block .block-menu__title', context).on('click', toggleClick);
-      // Test with proper anchor/fragment link for accessibility.
-      $('.rm-block .block-menu__title', context).wrapInner('<a href="#rm-content" class="rm-toggle__link" />').on('click', toggleClick);
+      $('.rm-block .block-menu__title', context).on('click', toggleClick);
 
       // Enquire is a fancy wrapper for matchMedia.
       enquire

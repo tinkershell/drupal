@@ -53,20 +53,6 @@ class Field implements \IteratorAggregate, FieldInterface {
   protected $boost;
 
   /**
-   * Whether this field should always be enabled/indexed.
-   *
-   * @var bool
-   */
-  protected $indexedLocked;
-
-  /**
-   * Whether this field type should be locked.
-   *
-   * @var bool
-   */
-  protected $typeLocked;
-
-  /**
    * {@inheritdoc}
    */
   public function getType() {
@@ -143,7 +129,7 @@ class Field implements \IteratorAggregate, FieldInterface {
       $fields = $this->index->getOption('fields', array());
       $this->indexed = isset($fields[$this->fieldIdentifier]);
     }
-    return $this->isIndexedLocked() || $this->indexed;
+    return $this->isLocked() || $this->indexed;
   }
 
   /**
@@ -196,36 +182,6 @@ class Field implements \IteratorAggregate, FieldInterface {
         $this->index->setOption('fields', $fields);
       }
     }
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isIndexedLocked() {
-    return (bool) $this->indexedLocked;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setIndexedLocked($indexed_locked = TRUE) {
-    $this->indexedLocked = $indexed_locked;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isTypeLocked() {
-    return (bool) $this->typeLocked;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setTypeLocked($type_locked = TRUE) {
-    $this->typeLocked = $type_locked;
     return $this;
   }
 

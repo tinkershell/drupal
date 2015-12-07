@@ -1,12 +1,12 @@
 /**
  * Table Base
  * Set base styles for table elements.
- ============================================================================ */
+ ========================================================================== */
 
 table {
   padding: 0;
-  border: 0;
-
+  width: 100%;
+  border: $border-width $border-style;
   border-collapse: collapse;
 
   caption {
@@ -46,7 +46,7 @@ thead {
 tr,
 td,
 th {
-  border: $border-width $border-style;
+  border-style: $border-style;
 }
 
 
@@ -56,4 +56,3 @@ th {
   @include output-rhythm(padding, $xx-small);
   vertical-align: middle;
 }
-

@@ -26,5 +26,4 @@ class AlteringValueTestDataType extends DataTypePluginBase {
   public function getValue($value) {
     return strlen($value);
   }
-
 }

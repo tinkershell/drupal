@@ -2,7 +2,7 @@
 
   "use strict";
 
-  Drupal.behaviors.atBP = {
+  Drupal.behaviors.atbP = {
     attach: function (context, settings) {
 
       // Verify that the user agent understands media queries.
@@ -14,23 +14,24 @@
       // and write the breakpoints used in layout settings, which are themselves
       // set in breakpoints module config, i.e. themeName.breakpoints.yml and are
       // the group selected to be used by the themes layout.
-      var activeTheme = settings['ajaxPageState']['theme'];
-      var bp = settings[activeTheme]['at_breakpoints'];
+      var bp = settings['at_bp'];
 
       function registerEnquire(breakpoint_label, breakpoint_query) {
         enquire.register(breakpoint_query, {
           match: function() {
-            $(document.body).addClass('bp--' + breakpoint_label);
+            $(document.body).addClass('bp-' + breakpoint_label);
           },
           unmatch: function() {
-            $(document.body).removeClass('bp--' + breakpoint_label);
+            $(document.body).removeClass('bp-' + breakpoint_label);
           }
         });
       }
 
       for (var item in bp) {
         if (bp.hasOwnProperty(item)) {
-          registerEnquire(item, bp[item]['mediaquery']);
+          var breakpoint_label = item,
+              breakpoint_query = bp[item];
+          registerEnquire(breakpoint_label, breakpoint_query);
         }
       }
     }

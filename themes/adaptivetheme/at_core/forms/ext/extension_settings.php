@@ -1,15 +1,5 @@
 <?php
 
-/**
- * @file
- * Generate form elements for the Extension settings.
- */
-
-// Submit handlers for the advanced settings.
-include_once(drupal_get_path('theme', 'at_core') . '/forms/ext/extension_settings_validate.php');
-include_once(drupal_get_path('theme', 'at_core') . '/forms/ext/extension_settings_submit.php');
-include_once(drupal_get_path('theme', 'at_core') . '/forms/ext/extension_clearcache.php');
-
 $settings_extensions_form_open = theme_get_setting('settings.extensions_form_open', $theme);
 
 $form['extensions'] = array(
@@ -70,22 +60,6 @@ $form['enable_extensions']['settings_enable_responsive_menus'] = array(
   '#default_value' => theme_get_setting('settings.enable_responsive_menus', $theme),
 );
 
-// Image alignment and captions
-$form['enable_extensions']['settings_enable_images'] = array(
-  '#type' => 'checkbox',
-  '#title' => t('Image alignment and captions'),
-  '#default_value' => theme_get_setting('settings.enable_images', $theme),
-  '#description' => t('Set image alignment, captions and teaser view per content type.'),
-);
-
-// Touch icons
-$form['enable_extensions']['settings_enable_touch_icons'] = array(
-  '#type' => 'checkbox',
-  '#title' => t('Touch icons'),
-  '#description' => t('Add touch icon meta tags. A default set of icons are located in <code>@touchiconpath</code>.', array('@touchiconpath' => $subtheme_path . '/images/touch-icons/')),
-  '#default_value' => theme_get_setting('settings.enable_touch_icons', $theme),
-);
-
 // Fonts
 $form['enable_extensions']['settings_enable_fonts'] = array(
   '#type' => 'checkbox',
@@ -97,9 +71,17 @@ $form['enable_extensions']['settings_enable_fonts'] = array(
 // Title styles
 $form['enable_extensions']['settings_enable_titles'] = array(
   '#type' => 'checkbox',
-  '#title' => t('Titles'),
+  '#title' => t('Title styles'),
   '#default_value' => theme_get_setting('settings.enable_titles', $theme),
-  '#description' => t('Set case, weight, alignment and letter-spacing for titles (headings).'),
+  '#description' => t('Set case, weight and alignment for titles (headings).'),
+);
+
+// Image alignment and captions
+$form['enable_extensions']['settings_enable_images'] = array(
+  '#type' => 'checkbox',
+  '#title' => t('Image alignment and captions'),
+  '#default_value' => theme_get_setting('settings.enable_images', $theme),
+  '#description' => t('Set image alignment, captions and teaser view per content type.'),
 );
 
 // Shortcodes
@@ -110,14 +92,6 @@ $form['enable_extensions']['settings_enable_shortcodes'] = array(
   '#default_value' => theme_get_setting('settings.enable_shortcodes', $theme),
 );
 
-// Slideshows
-$form['enable_extensions']['settings_enable_slideshows'] = array(
-  '#type' => 'checkbox',
-  '#title' => t('Slideshows'),
-  '#description' => t('Enable slideshows and configure settings.'),
-  '#default_value' => theme_get_setting('settings.enable_slideshows', $theme),
-);
-
 // Mobile blocks
 $form['enable_extensions']['settings_enable_mobile_blocks'] = array(
   '#type' => 'checkbox',
@@ -126,12 +100,44 @@ $form['enable_extensions']['settings_enable_mobile_blocks'] = array(
   '#default_value' => theme_get_setting('settings.enable_mobile_blocks', $theme),
 );
 
+// Slideshows
+$form['enable_extensions']['settings_enable_slideshows'] = array(
+  '#type' => 'checkbox',
+  '#title' => t('Slideshows'),
+  '#description' => t('Enable slideshows and configure settings.'),
+  '#default_value' => theme_get_setting('settings.enable_slideshows', $theme),
+);
+
+// Touch icons
+$form['enable_extensions']['settings_enable_touch_icons'] = array(
+  '#type' => 'checkbox',
+  '#title' => t('Touch icons'),
+  '#description' => t('Add touch icon meta tags. A default set of icons are located in <code>!touchiconpath</code>.', array('!touchiconpath' => $subtheme_path . '/images/touch-icons/')),
+  '#default_value' => theme_get_setting('settings.enable_touch_icons', $theme),
+);
+
 // Custom CSS
 $form['enable_extensions']['settings_enable_custom_css'] = array(
   '#type' => 'checkbox',
   '#title' => t('Custom CSS'),
   '#description' => t('Enter custom CSS rules for minor adjustment to your theme.'),
   '#default_value' => theme_get_setting('settings.enable_custom_css', $theme),
+);
+
+// Markup overrides
+$form['enable_extensions']['settings_enable_markup_overrides'] = array(
+  '#type' => 'checkbox',
+  '#title' => t('Markup overrides'),
+  '#description' => t('Options for modifying output, includes settings for:
+    <ul>
+      <li>Breadcrumbs</li>
+      <li>Login block</li>
+      <li>Comment titles</li>
+      <li>Skip link</li>
+      <li>Attribution</li>
+    </ul>
+    '),
+  '#default_value' => theme_get_setting('settings.enable_markup_overrides', $theme),
 );
 
 // Devel
@@ -146,30 +152,8 @@ $form['enable_extensions']['settings_enable_devel'] = array(
 $form['enable_extensions']['settings_enable_legacy_browsers'] = array(
   '#type' => 'checkbox',
   '#title' => t('Legacy browsers'),
-  '#description' => t('Settings to support crappy old browsers like IE8. Use with caution, do not enable this unless you really, really need it.'),
+  '#description' => t('Settings to support really old browsers like IE8. Use with caution, do not enable this unless you really need it.'),
   '#default_value' => theme_get_setting('settings.enable_legacy_browsers', $theme),
-);
-
-// Markup overrides
-$form['enable_extensions']['settings_enable_markup_overrides'] = array(
-  '#type' => 'checkbox',
-  '#title' => t('Markup overrides'),
-  '#description' => array(
-    '#theme' => 'item_list',
-    '#list_type' => 'ul',
-    '#attributes' => array('class' => array('markup-overrides-desc')),
-    '#items' => array(
-      t('Responsive tables'),
-      t('Breadcrumbs'),
-      t('Search block'),
-      t('Login block'),
-      t('Comment titles'),
-      t('Feed icons'),
-      t('Skip link'),
-      t('Attribution'),
-    ),
-  ),
-  '#default_value' => theme_get_setting('settings.enable_markup_overrides', $theme),
 );
 
 // Extensions master toggle.
@@ -193,7 +177,7 @@ if (theme_get_setting('settings.enable_extensions', $theme) == 1) {
     'legacy_browsers',
   );
 
-  // Get form values.
+  // get form values
   $values = $form_state->getValues();
 
   foreach ($extensions_array as $extension) {
@@ -205,6 +189,9 @@ if (theme_get_setting('settings.enable_extensions', $theme) == 1) {
     }
   }
 }
+
+// Help (sub-theme). TODO: rethink where help goes.
+// include_once($at_core_path . '/forms/help_subtheme.php');
 
 // Submit button for advanced settings.
 $form['extensions']['actions'] = array(
@@ -220,9 +207,11 @@ $form['extensions']['actions']['submit'] = array(
   '#weight' => -10000,
 );
 
-$form['extensions']['actions']['submit_clearcache'] = array(
-  '#type' => 'submit',
-  '#value' => t('Clear cache'),
-  '#submit'=> array('at_core_submit_extension_clearcache'),
-  '#weight' => -10000,
-);
+//$form['#validate'][] = 'at_core_validate_advanced_settings';
+//$form['#submit'][] = 'at_core_submit_advanced_settings';
+//$form['actions']['submit']['#validate'][] = 'at_core_validate_advanced_settings';
+//$form['actions']['submit']['#submit'][] = 'at_core_submit_advanced_settings';
+
+// Submit handlers for the advanced settings.
+include_once(drupal_get_path('theme', 'at_core') . '/forms/ext/extension_settings_validate.php');
+include_once(drupal_get_path('theme', 'at_core') . '/forms/ext/extension_settings_submit.php');

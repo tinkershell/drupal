@@ -7,8 +7,7 @@
 
 namespace Drupal\search_api\Plugin\search_api\datasource;
 
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
@@ -49,13 +48,6 @@ class ContentEntity extends DatasourcePluginBase {
   protected $typedDataManager;
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface|null
-   */
-  protected $configFactory;
-
-  /**
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, array $plugin_definition) {
@@ -86,10 +78,6 @@ class ContentEntity extends DatasourcePluginBase {
     /** @var \Drupal\Core\TypedData\TypedDataManager $typed_data_manager */
     $typed_data_manager = $container->get('typed_data_manager');
     $datasource->setTypedDataManager($typed_data_manager);
-
-    /** @var $config_factory \Drupal\Core\Config\ConfigFactoryInterface */
-    $config_factory = $container->get('config.factory');
-    $datasource->setConfigFactory($config_factory);
 
     return $datasource;
   }
@@ -161,41 +149,6 @@ class ContentEntity extends DatasourcePluginBase {
   }
 
   /**
-   * Retrieves the config factory.
-   *
-   * @return \Drupal\Core\Config\ConfigFactoryInterface
-   *   The config factory.
-   */
-  public function getConfigFactory() {
-    return $this->configFactory ?: \Drupal::configFactory();
-  }
-
-  /**
-   * Retrieves the config value for a certain key in the Search API settings.
-   *
-   * @param string $key
-   *   The key whose value should be retrieved.
-   *
-   * @return mixed
-   *   The config value for the given key.
-   */
-  protected function getConfigValue($key) {
-    return $this->getConfigFactory()->get('search_api.settings')->get($key);
-  }
-
-  /**
-   * Sets the config factory.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The new config factory.
-   *
-   * @return $this
-   */
-  public function setConfigFactory(ConfigFactoryInterface $config_factory) {
-    $this->configFactory = $config_factory;
-    return $this;
-  }
-  /**
    * {@inheritdoc}
    */
   public function getPropertyDefinitions() {
@@ -233,9 +186,6 @@ class ContentEntity extends DatasourcePluginBase {
     $items = array();
     foreach ($entity_ids as $entity_id => $langcodes) {
       foreach ($langcodes as $item_id => $langcode) {
-        // @todo Also refuse to load entities from not-included bundles? This
-        //   would help to avoid possible race conditions when removing bundles
-        //   from the datasource config. See #2574583.
         if (!empty($entities[$entity_id]) && $entities[$entity_id]->hasTranslation($langcode)) {
           $items[$item_id] = $entities[$entity_id]->getTranslation($langcode)->getTypedData();
         }
@@ -246,7 +196,7 @@ class ContentEntity extends DatasourcePluginBase {
     }
     // If we were unable to load some of the items, mark them as deleted.
     // @todo The index should be responsible for this, not individual
-    //   datasources. See #2574589.
+    //   datasources.
     if ($missing) {
       $this->getIndex()->trackItemsDeleted($this->getPluginId(), array_keys($missing));
     }
@@ -277,10 +227,8 @@ class ContentEntity extends DatasourcePluginBase {
       // First, check if the "default" setting changed and invert the set
       // bundles for the old config, so the following comparison makes sense.
       // @todo If the available bundles changed in between, this will still
-      //   produce wrong results. Also, we should definitely only store a
-      //   numerically-indexed array of the selected bundles, not the
-      //   "checkboxes" raw format. This will, very likely, also resolve that
-      //   issue. See #2471535.
+      //   produce wrong results. And we should definitely only store a numeric
+      //   array of the selected bundles, not the "checkboxes" raw format.
       if ($old_config['default'] != $new_config['default']) {
         foreach ($old_config['bundles'] as $bundle_key => $bundle) {
           if ($bundle_key == $bundle) {
@@ -315,8 +263,6 @@ class ContentEntity extends DatasourcePluginBase {
             }
           }
         }
-        // @todo Make this use a batch instead, like when enabling a datasource.
-        //   See #2574611.
         if (!empty($bundles_start)) {
           if ($entity_ids = $this->getBundleItemIds(array_keys($bundles_start))) {
             $this->getIndex()->trackItemsInserted($this->getPluginId(), $entity_ids);
@@ -383,7 +329,7 @@ class ContentEntity extends DatasourcePluginBase {
     if (($bundles = $this->getEntityBundles())) {
       unset($bundles[$this->getEntityTypeId()]);
       foreach ($bundles as $bundle => $bundle_info) {
-        $options[$bundle] = Html::escape($bundle_info['label']);
+        $options[$bundle] = SafeMarkup::checkPlain($bundle_info['label']);
       }
     }
     return $options;
@@ -433,8 +379,9 @@ class ContentEntity extends DatasourcePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getItemIds($page = NULL) {
-    return $this->getBundleItemIds(NULL, $page);
+  public function getItemIds($limit = '-1', $from = NULL) {
+    // @todo Implement paging.
+    return $this->getBundleItemIds();
   }
 
   /**
@@ -488,14 +435,11 @@ class ContentEntity extends DatasourcePluginBase {
    * @param string[]|null $bundles
    *   (optional) The bundles for which all item IDs should be returned; or NULL
    *   to retrieve IDs from all enabled bundles in this datasource.
-   * @param int|null $page
-   *   The zero-based page of IDs to retrieve, for the paging mechanism
-   *   implemented by this datasource; or NULL to retrieve all items at once.
    *
    * @return string[]
    *   An array of all item IDs of these bundles.
    */
-  protected function getBundleItemIds(array $bundles = NULL, $page = NULL) {
+  protected function getBundleItemIds(array $bundles = NULL) {
     // If NULL was passed, use all enabled bundles.
     if (!isset($bundles)) {
       $bundles = array_keys($this->getBundles());
@@ -509,21 +453,13 @@ class ContentEntity extends DatasourcePluginBase {
         $select->condition($this->getEntityType()->getKey('bundle'), $bundles, 'IN');
       }
     }
-    if (isset($page)) {
-      $page_size = $this->getConfigValue('tracking_page_size');
-      $select->range($page * $page_size, $page_size);
-    }
     $entity_ids = $select->execute();
-
-    if (!$entity_ids) {
-      return NULL;
-    }
 
     // For all the loaded entities, compute all their item IDs (one for each
     // translation).
     $item_ids = array();
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-    foreach ($this->getEntityStorage()->loadMultiple($entity_ids) as $entity_id => $entity) {
+    foreach (entity_load_multiple($this->getEntityTypeId(), $entity_ids) as $entity_id => $entity) {
       foreach (array_keys($entity->getTranslationLanguages()) as $langcode) {
         $item_ids[] = "$entity_id:$langcode";
       }
@@ -561,7 +497,9 @@ class ContentEntity extends DatasourcePluginBase {
    */
   public function getViewModes($bundle = NULL) {
     if (isset($bundle)) {
-      return $this->getEntityManager()->getViewModeOptionsByBundle($this->getEntityTypeId(), $bundle);
+      // @todo Implement getViewModeOptionsByBundle per https://www.drupal.org/node/2322503
+      //return $this->getEntityManager()->getViewModeOptionsByBundle($this->getEntityTypeId(), $bundle);
+      return $this->getEntityManager()->getViewModeOptions($this->getEntityTypeId(), TRUE);
     }
     else {
       return $this->getEntityManager()->getViewModeOptions($this->getEntityTypeId());

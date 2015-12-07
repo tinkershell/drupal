@@ -1,12 +1,9 @@
 /**
  * Field Image
- ============================================================================ */
+ ========================================================================== */
 
 // AT uses <figure> as the image field wrapper and <figcaption> for image captions.
 .field-type-image {
-
-  margin: 0;
-  padding: 0;
 
   &.has-single {}
   &.has-multiple {}
@@ -14,9 +11,6 @@
   figure {
     @include output-rhythm(margin-bottom, $medium);
   }
-
-  // Wraps the img and figcaption tags for each item.
-  &__item {}
 
   // Image Alignment Theme Settings
   // - settings are applied using the Image extension in theme settings, where you can
@@ -40,7 +34,7 @@
     @include output-rhythm(margin-bottom, $medium);
   }
   figure.align-center {
-    display: block;
+    display: table;
   }
 
   // Align right.
@@ -66,18 +60,6 @@
 }
 
 
-// Remove any floats and reset whitespace in mobile.
-@media #{$mobile-isolate} {
-  .field-type-image [class*="align-"] {
-    text-align: center; // cascades to figcaption
-    margin-left: auto;
-    margin-right: auto;
-    float: none;
-    @include output-rhythm(margin-bottom, $medium);
-  }
-  .field-type-image figure[class*="align-"] {
-    display: block;
-  }
-}
+
 
 

@@ -7,7 +7,6 @@
 
 namespace Drupal\search_api;
 
-use Drupal\Core\Config\ConfigImporter;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\TypedData\ComplexDataDefinitionInterface;
 use Drupal\Core\TypedData\ComplexDataInterface;
@@ -15,7 +14,6 @@ use Drupal\Core\TypedData\DataReferenceInterface;
 use Drupal\Core\TypedData\ListInterface;
 use Drupal\Core\TypedData\TypedDataInterface;
 use Drupal\search_api\Datasource\DatasourceInterface;
-use Drupal\search_api\Entity\Index;
 use Drupal\search_api\Item\AdditionalField;
 use Drupal\search_api\Item\Field;
 use Drupal\search_api\Item\FieldInterface;
@@ -67,6 +65,43 @@ class Utility {
   public static function isTextType($type, array $text_types = array('text')) {
     return in_array($type, $text_types);
   }
+
+  /**
+   * Returns the default field types recognized by the Search API.
+   *
+   * @return string[][]
+   *   A nested associative array with the default types as keys, mapped to
+   *   their translated labels and descriptions.
+   */
+  public static function getDefaultDataTypes() {
+    return array(
+      'text' => array(
+        'label' => t('Fulltext'),
+        'description' => t('A fulltext field'),
+      ),
+      'string' => array(
+        'label' => t('String'),
+        'description' => t('A string field'),
+      ),
+      'integer' => array(
+        'label' => t('Integer'),
+        'description' => t('An integer field'),
+      ),
+      'decimal' => array(
+        'label' => t('Decimal'),
+        'description ' => t('A decimal field'),
+      ),
+      'date' => array(
+        'label' => t('Date'),
+        'description' => t('A date field'),
+      ),
+      'boolean' => array(
+        'label' => t('Boolean'),
+        'description' => t('A boolean field'),
+      ),
+    );
+  }
+
 
   /**
    * Retrieves the mapping for known data types to Search API's internal types.
@@ -154,15 +189,12 @@ class Utility {
       }
       catch (SearchApiException $e) {
         // If the server isn't available, just ignore it here and return all
-        // custom types.
+        // types.
       }
       static::$dataTypeFallbackMapping[$index_id] = array();
       /** @var \Drupal\search_api\DataType\DataTypeInterface $data_type */
-      foreach (\Drupal::service('plugin.manager.search_api.data_type')->getInstances() as $type_id => $data_type) {
-        // We know for sure that we do not need to fall back for the default
-        // data types as they are always present and are required to be
-        // supported by all backends.
-        if (!$data_type->isDefault() && (!$server || !$server->supportsDataType($type_id))) {
+      foreach (\Drupal::service('plugin.manager.search_api.data_type')->getCustomDataTypes() as $type_id => $data_type) {
+        if (!$server || !$server->supportsDataType($type_id)) {
           static::$dataTypeFallbackMapping[$index_id][$type_id] = $data_type->getFallbackType();
         }
       }
@@ -276,72 +308,6 @@ class Utility {
    */
   public static function getServerTaskManager() {
     return \Drupal::service('search_api.server_task_manager');
-  }
-
-  /**
-   * Retrieves the index task manager.
-   *
-   * @return \Drupal\search_api\Task\IndexTaskManagerInterface
-   *   The index task manager.
-   */
-  public static function getIndexTaskManager() {
-    return \Drupal::service('search_api.index_task_manager');
-  }
-
-  /**
-   * Processes all pending index tasks inside a batch run.
-   *
-   * @param array $context
-   *   The current batch context.
-   * @param \Drupal\Core\Config\ConfigImporter $config_importer
-   *   The config importer.
-   */
-  public static function processIndexTasks(array &$context, ConfigImporter $config_importer) {
-    $index_task_manager = static::getIndexTaskManager();
-
-    if (!isset($context['sandbox']['indexes'])) {
-      $context['sandbox']['indexes'] = array();
-
-      $indexes = \Drupal::entityManager()
-        ->getStorage('search_api_index')
-        ->loadByProperties(array(
-          'status' => TRUE,
-        ));
-      $deleted = $config_importer->getUnprocessedConfiguration('delete');
-
-      /** @var \Drupal\search_api\IndexInterface $index */
-      foreach ($indexes as $index_id => $index) {
-        if (!$index_task_manager->isTrackingComplete($index) && !in_array($index->getConfigDependencyName(), $deleted)) {
-          $context['sandbox']['indexes'][] = $index_id;
-        }
-      }
-      $context['sandbox']['total'] = count($context['sandbox']['indexes']);
-      if (!$context['sandbox']['total']) {
-        $context['finished'] = 1;
-        return;
-      }
-    }
-
-    $index_id = array_shift($context['sandbox']['indexes']);
-    $index = Index::load($index_id);
-    $added = $index_task_manager->addItemsOnce($index);
-    if ($added !== NULL) {
-      array_unshift($context['sandbox']['indexes'], $index_id);
-    }
-
-    if (empty($context['sandbox']['indexes'])) {
-      $context['finished'] = 1;
-    }
-    else {
-      $finished = $context['sandbox']['total'] - count($context['sandbox']['indexes']);
-      $context['finished'] = $finished / $context['sandbox']['total'];
-      $args = array(
-        '%index' => $index->label(),
-        '@num' => $finished + 1,
-        '@total' => $context['sandbox']['total'],
-      );
-      $context['message'] = \Drupal::translation()->translate('Tracking items for search index %index (@num of @total)', $args);
-    }
   }
 
   /**

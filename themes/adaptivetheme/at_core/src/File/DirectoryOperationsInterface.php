@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\at_core\File\DirectoryOperationsInterface
- */
-
 namespace Drupal\at_core\File;
 
 interface DirectoryOperationsInterface {
@@ -34,9 +29,10 @@ interface DirectoryOperationsInterface {
   /**
    * Delete a folder and all files recursively.
    *
-   * @param $directory
-   * @return bool Returns TRUE on success, FALSE on failure
-   * Returns TRUE on success, FALSE on failure
+   * @param string $dirname
+   *   Directory to delete
+   * @return bool
+   *   Returns TRUE on success, FALSE on failure
    */
   public function directoryRemove($directory);
 
@@ -55,5 +51,4 @@ interface DirectoryOperationsInterface {
    * @return array globbed files
    */
   public function directoryGlob($path, array $types);
-
 }

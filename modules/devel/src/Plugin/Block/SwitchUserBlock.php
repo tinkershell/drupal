@@ -7,7 +7,7 @@
 
 namespace Drupal\devel\Plugin\Block;
 
-use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -194,7 +194,7 @@ class SwitchUserBlock extends BlockBase implements ContainerFactoryPluginInterfa
 
     $roles = user_roles(TRUE, 'switch users');
 
-    if (!empty($roles) && !isset($roles[Role::AUTHENTICATED_ID])) {
+    if (!isset($roles[Role::AUTHENTICATED_ID])) {
       $query->condition('roles', array_keys($roles), 'IN');
     }
 
@@ -203,20 +203,15 @@ class SwitchUserBlock extends BlockBase implements ContainerFactoryPluginInterfa
     // If we don't have enough users with 'switch users' permission, add
     // uids until we hit $list_size.
     if (count($user_ids) < $list_size) {
-      $query = $this->userStorage->getQuery()
+      $users = $this->userStorage->getQuery()
         ->condition('uid', 0, '>')
         ->condition('status', 0, '>')
+        ->condition('uid', array_keys($user_ids), 'NOT IN')
         ->sort('access', 'DESC')
-        ->range(0, $list_size);
+        ->range(0, $list_size - count($user_ids))
+        ->execute();
 
-      // Excludes the prioritized user ids only if the previous query return
-      // some records.
-      if (!empty($user_ids)) {
-        $query->condition('uid', array_keys($user_ids), 'NOT IN');
-        $query->range(0, $list_size - count($user_ids));
-      }
-
-      $user_ids += $query->execute();
+      $user_ids += $users;
     }
 
     $accounts = $this->userStorage->loadMultiple($user_ids);
@@ -258,7 +253,7 @@ class SwitchUserBlock extends BlockBase implements ContainerFactoryPluginInterfa
       }
 
       if ($this->currentUser->id() === $account->id()) {
-        $links[$account->id()]['title'] = new FormattableMarkup('<strong>%user</strong>', ['%user' => $account->getDisplayName()]);
+        $links[$account->id()]['title'] = SafeMarkup::format('<strong>%user</strong>', ['%user' => $account->getDisplayName()]);
       }
     }
 

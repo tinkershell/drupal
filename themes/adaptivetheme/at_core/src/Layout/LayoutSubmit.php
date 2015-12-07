@@ -2,17 +2,22 @@
 
 /**
  * @file
- * Contains \Drupal\at_core\Layout\LayoutSubmit
+ * Contains \Drupal\at_core\Layout\LayoutGenerator
  */
 
 namespace Drupal\at_core\Layout;
 
+use Drupal\at_core\Layout\Layout;
+use Drupal\at_core\Layout\LayoutCompatible;
 use Drupal\at_core\File\FileOperations;
 use Drupal\at_core\File\DirectoryOperations;
+
 use Drupal\Component\Utility\Unicode;
 use Symfony\Component\Yaml\Parser;
 use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Cache;
+
 
 class LayoutSubmit implements LayoutSubmitInterface {
 
@@ -38,9 +43,7 @@ class LayoutSubmit implements LayoutSubmitInterface {
     $this->form_values = $values;
   }
 
-  /**
-   * {@inheritdoc}
-   */
+  // Save the layout CSS for each suggestion. This is all a bit crazy, but yeah, it does actually work.
   public function saveLayoutSuggestionsCSS() {
 
     $breakpoints_group = \Drupal::service('breakpoint.manager')->getBreakpointsByGroup($this->form_values['settings_breakpoint_group_layout']);
@@ -105,7 +108,7 @@ class LayoutSubmit implements LayoutSubmitInterface {
       $max_width_override = 'div.regions{max-width:' . trim($max_width_value) . $this->form_values['settings_max_width_unit'] . '}';
     }
 
-    // Don't regenerate CSS files to be removed.
+    // Dont regenerate CSS files to be removed.
     foreach ($this->form_values as $values_key => $values_value) {
       if (substr($values_key, 0, 18) === 'delete_suggestion_') {
         if ($values_value === 1) {
@@ -126,6 +129,7 @@ class LayoutSubmit implements LayoutSubmitInterface {
     foreach ($output as $suggestion => $css) {
       if (!empty($css)) {
         $file_content = $time ."\n". $global_css ."\n". implode("\n", $css) . "\n" . $max_width_override;
+        //$file_content = $time . $global_css . implode("", $css) . $max_width_override;
         $file_name = $this->theme_name . '.layout.' . str_replace('_', '-', $suggestion) . '.css';
         $filepath = "$generated_files_path/$file_name";
         file_unmanaged_save_data($file_content, $filepath, FILE_EXISTS_REPLACE);
@@ -140,14 +144,12 @@ class LayoutSubmit implements LayoutSubmitInterface {
         '#theme' => 'item_list',
         '#items' => $saved_css,
       );
-      $saved_css_message = \Drupal::service('renderer')->render($saved_css_message_list);
-      drupal_set_message(t('The following layout <b>CSS files</b> were generated: @saved_css', array('@saved_css' => $saved_css_message)), 'status');
+      $saved_css_message = drupal_render($saved_css_message_list);
+      drupal_set_message(t('The following layout <b>CSS files</b> were generated: !saved_css', array('!saved_css' => $saved_css_message)), 'status');
     }
   }
 
-  /**
-   * {@inheritdoc}
-   */
+  // Save regions to the theme info file, these can change if a new row is added.
   public function saveLayoutRegions() {
     $regions = array();
 
@@ -172,8 +174,7 @@ class LayoutSubmit implements LayoutSubmitInterface {
 
       $backup_path = $directoryOperations->directoryPrepare($backup_file_path = array($path, 'backup', 'info'));
 
-      // Add a date time string to make unique and for easy identification,
-      // save as .txt to avoid conflicts.
+      //Add a date time string to make unique and for easy identification, save as .txt to avoid conflicts.
       $backup_file =  $info_file . '.'. date(DATE_ISO8601) . '.txt';
 
       $file_paths = array(
@@ -186,9 +187,15 @@ class LayoutSubmit implements LayoutSubmitInterface {
     }
 
     // Parse the current info file.
+    //$theme_info_data = drupal_parse_info_file($file_path);
     $parser = new Parser();
     $theme_info_data = $parser->parse(file_get_contents($file_path));
     $theme_info_data['regions'] = $regions;
+
+    // During the parse get contents single quotes are stripped from
+    // strings, we have to add them back because they might have spaces.
+    //$theme_info_data['name'] = "'" . $theme_info_data['name'] . "'";
+    //$theme_info_data['description'] = "'" . $theme_info_data['description'] . "'";
 
     // Prepare the array for printing in yml format.
     $buildInfo = new FileOperations();
@@ -198,13 +205,11 @@ class LayoutSubmit implements LayoutSubmitInterface {
     file_unmanaged_save_data($rebuilt_info, $file_path, FILE_EXISTS_REPLACE);
   }
 
-  /**
-   * {@inheritdoc}
-   */
+
+  // Save each suggestion template, these are saved every time the layout settings
+  // are saved because the rows and regions might change, so we resave every template.
   public function saveLayoutSuggestionsMarkup() {
     $template_suggestions = array();
-    $fileOperations = new FileOperations();
-    $directoryOperations = new DirectoryOperations();
 
     if (!empty($this->form_values['settings_suggestions'])) {
       $template_suggestions = $this->form_values['settings_suggestions'];
@@ -234,16 +239,13 @@ class LayoutSubmit implements LayoutSubmitInterface {
     // Path to target theme where the template will be saved.
     $path = drupal_get_path('theme', $this->theme_name);
 
-    // Remove if this exists, its now deprecated, this is a BC layer so to speak.
-    $directoryOperations->directoryRemove($path . '/templates/page');
-    $template_directory = $path . '/templates/generated';
+    $template_directory = $path . '/templates/page';
 
-    // Check and create the templates directory if does not exist.
     if (!file_exists($path . '/templates')) {
-      \Drupal::service('file_system')->mkdir($path . '/templates');
+      drupal_mkdir($path . '/templates');
     }
     if (!file_exists($template_directory)) {
-      \Drupal::service('file_system')->mkdir($template_directory);
+      drupal_mkdir($template_directory);
     }
 
     // We have to save every template every time, in case a row has been added to the layout, all template MUST update.
@@ -274,8 +276,7 @@ class LayoutSubmit implements LayoutSubmitInterface {
       }
       $attach_layout = "{{ attach_library('$library') }}";
 
-      // Get the template file, if not found attempt to generate template
-      // code programmatically.
+      // Get the template file, if not found attempt to generate template code programmatically.
       if (file_exists($template_file)) {
         $template = file_get_contents($template_file);
       }
@@ -321,6 +322,7 @@ class LayoutSubmit implements LayoutSubmitInterface {
           $output[$suggestion_key][$row]['suffix'] = '  {% endif %}' . "\n";
         }
 
+        //$generated[$suggestion_key][] = "{# No template file found - template code programmatically generated. #}" . "\n";
         $generated[$suggestion_key][] = '<div{{ attributes }}>'. "\n";
 
         foreach ($output[$suggestion_key] as $row_output) {
@@ -353,10 +355,12 @@ class LayoutSubmit implements LayoutSubmitInterface {
       // Create a backup.
       if ($this->form_values['settings_enable_backups'] == 1) {
 
+        $fileOperations = new FileOperations();
+        $directoryOperations = new DirectoryOperations();
+
         $backup_path = $directoryOperations->directoryPrepare($backup_file_path = array($path, 'backup', 'templates'));
 
-        //Add a date time string to make unique and for easy identification,
-        // save as .txt to avoid conflicts.
+        //Add a date time string to make unique and for easy identification, save as .txt to avoid conflicts.
         $backup_file =  $template_file . '.' . date(DATE_ISO8601) . '.txt';
 
         $file_paths = array(
@@ -384,7 +388,7 @@ class LayoutSubmit implements LayoutSubmitInterface {
         '#items' => $saved_templates,
       );
       $saved_templates_message = drupal_render($saved_templates_message_list);
-      drupal_set_message(t('The following <b>templates</b> were generated: @saved_templates', array('@saved_templates' => $saved_templates_message)), 'status');
+      drupal_set_message(t('The following <b>templates</b> were generated: !saved_templates', array('!saved_templates' => $saved_templates_message)), 'status');
     }
   }
 }

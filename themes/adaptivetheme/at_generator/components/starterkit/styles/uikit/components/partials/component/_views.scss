@@ -1,16 +1,11 @@
 /**
  * Views
- ============================================================================ */
-
-// View wrapper.
-.views-element-container {}
+ ========================================================================== */
 
 .view {}
-.view-content {}
+
 .views-row {}
 
-
-// Grid view overrides.
 .views-view-grid  {
   .views-col {
     @include output-rhythm(padding-#{$flow-to}, $large);
@@ -25,10 +20,6 @@
 }
 
 
-// Some core views, not exhaustive.
+// List all views pages/blocks in core for reference until its decided on what/where they go.
 .view-frontpage {}
 .view-taxonomy-term {}
-
-
-
-

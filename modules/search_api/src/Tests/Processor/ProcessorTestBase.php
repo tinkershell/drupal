@@ -22,7 +22,7 @@ abstract class ProcessorTestBase extends EntityUnitTestBase {
    *
    * @var string[]
    */
-  public static $modules = array('user', 'node', 'search_api','search_api_db', 'search_api_test_backend', 'comment');
+  public static $modules = array('user', 'node', 'search_api','search_api_db', 'search_api_test_backend', 'comment', 'entity_reference');
 
   /**
    * The processor used for this test.
@@ -106,11 +106,6 @@ abstract class ProcessorTestBase extends EntityUnitTestBase {
       $this->processor = $plugin_manager->createInstance($processor, array('index' => $this->index));
     }
     $this->index->save();
-    \Drupal::configFactory()
-      ->getEditable('search_api.settings')
-      ->set('tracking_page_size', 100)
-      ->save();
-    Utility::getIndexTaskManager()->addItemsAll($this->index);
   }
 
   /**

@@ -1,7 +1,11 @@
-// Mega Nav
-// Hamburger menu that shows the top level items horizontal, and when expanded
-// the top level items show vertically with sub-menus horizontal.
-// This style was borrowed from http://www.theguardian.com
+//
+// FlipSlide
+//
+// Do NOT @include into a selector, these must apply to the body element (looks like this can be changed so we don't need to rely in the body selector?)
+//
+// Hamburder type menu that shows the top level items horizonatally. When the menu is expanded the top leve items show vertically with sub-menus
+// displayed horizontally.
+//
 
 @mixin meganav($col-width: 12em, $arrows: true) {
 
@@ -18,51 +22,29 @@
       z-index: 200;
       padding: 0;
 
-      span {
-        vertical-align: middle;
-        display: none;
-
-        // Wait for FontAwesome to load.
-        .fa-loaded & {
-          @include visually-hidden;
-          display: inline-block;
-        }
-      }
-
       &:after {
+        display: block;
         font-family: $icon-font;
         content: $menu-hamburger;
-        display: none;
-        z-index: 100;
         @include output-rhythm(width, $medium);
-        @include output-rhythm(padding, $xxxx-small $small);
-        @include output-rhythm(margin-#{$flow-to}, -$small);
+        @include output-rhythm(padding, $xx-small $medium);
+      }
 
-        .fa-loaded & {
-          display: inline-block;
-        }
+      span {
+        @include visually-hidden;
       }
     }
 
     .rm-block__content {
-      transition: $global-transition;
+      transition: $transition_global;
 
-      .menu {
-        padding: 0;
-
-        .menu__link {
-          @include output-rhythm(padding, $xx-small $medium);
-
-          &:before,
-          &:after {
-            content: "";
-            display: none;
-          }
-        }
-      }
-
-      .menu-level-1 > .menu__item {
+      .menu-level-1 > li {
         float: #{$flow-from};
+
+        > a:after {
+          content: "";
+          display: none;
+        }
       }
 
       .menu-level-2 {
@@ -78,20 +60,26 @@
         padding: 0;
         margin: 0;
 
-        .menu-level-1 > .menu__item {
+        @if $arrows == true {
+          .menu li.expanded > a:after {
+            content: $menu-arrow-left;
+          }
+        }
+
+        .menu-level-1 > li {
           float: none;
-          margin-right: 2.5rem;
+          margin-right: 3.5rem;
           @include clearfix-micro;
 
           &:last-child {
             border-bottom: none;
           }
 
-          .menu__link {
+          a {
             float: #{$flow-from};
           }
 
-          > .menu__link {
+          > a {
             width: $col-width;
           }
         }
@@ -101,15 +89,15 @@
           float: #{$flow-from};
           opacity: 1;
 
-          .menu {
+          ul, ol {
             padding: 0;
           }
 
-          .menu,
-          .menu__item {
+          li,
+          ul {
             float: #{$flow-from};
 
-            .menu__link {
+            a {
               width: auto;
             }
           }
@@ -118,7 +106,3 @@
     }
   }
 }
-
-
-
-

@@ -1,11 +1,9 @@
 <?php
 
-/**
- * @file
- * Submit layouts.
- */
-
+use Drupal\Core\Config\Config;
+use Drupal\Core\Cache\Cache;
 use Drupal\Component\Utility\Unicode;
+
 use Drupal\at_core\Theme\ThemeSettingsConfig;
 use Drupal\at_core\Layout\LayoutSubmit;
 
@@ -61,16 +59,13 @@ function at_core_submit_layouts(&$form, &$form_state) {
     }
   }
 
-  // Don't let this timeout easily.
-  set_time_limit(60);
+  // Flush all caches. This is the only realy reliable way I have found to ensure
+  // new templates and layouts work correctly.
+  drupal_flush_all_caches();
 
   // Manage settings and configuration.
+  // Must get mutable config otherwise bad things happen.
   $config = \Drupal::configFactory()->getEditable($theme . '.settings');
   $convertToConfig = new ThemeSettingsConfig();
-  $convertToConfig->settingsLayoutConvertToConfig($values, $config);
-
-  // Flush all caches. This is the only really reliable way I have found to
-  // ensure new templates and layouts work correctly.
-  drupal_flush_all_caches();
-  drupal_set_message(t('Cache automatically cleared.'), 'status');
+  $convertToConfig->settingsConvertToConfig($values, $config);
 }

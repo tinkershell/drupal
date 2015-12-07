@@ -9,7 +9,7 @@
  *  - anchor links styled as buttons
  *  - drop buttons
  *  - action link buttons
- ============================================================================ */
+ ========================================================================== */
 
 button,
 .button {
@@ -29,7 +29,7 @@ button,
   text-decoration: none;
   text-align: $button-text-align;
   font-weight: $font-weight-normal;
-
+  @include output-rhythm(line-height, $form_input_button_select_height);
   white-space: nowrap;
 
   &:hover,
@@ -38,21 +38,24 @@ button,
   }
 
   &[disabled] {
-    &:hover {}
+    &:hover {
+    }
   }
 }
 
 
 //
-// Button variants are primarly changes in colors, so are set in
-//_theme.color.scss using the button-variant() mixin.
+// Button variants are primarly changes in colors, so are set in _theme.color.scss using the
+// button-variant() mixin.
 //
 
 // Primary button
-.button--primary {}
+.button--primary {
+}
 
 // Danger button, e.g. delete buttons often have this class.
-.button--danger {}
+.button--danger {
+}
 
 // Action button
 // - are links with an icon, and we add an icon for extra visibility.
@@ -66,16 +69,9 @@ button,
 
     @include adjust-font-size-to($small);
     @include output-rhythm(padding-#{$flow-to}, 4px);
-    @include output-rhythm(line-height, $form_input_button_select_height);
 
-    vertical-align: middle;
-
-    // Wait for FontAwesome to load.
-    display: none;
-
-    .fa-loaded & {
-      display: inline-block;
-    }
+    display: inline-block;
+    vertical-align: text-bottom;
   }
 
   // User is logged out, gets a button link to login.
@@ -87,28 +83,6 @@ button,
 
     vertical-align: baseline;
   }
-}
-
-
-// Action links wrappers.
-.action-links {
-  &__button {
-    padding: 0;
-    @include output-rhythm(margin, $medium 0);
-
-    @media #{$mobile-isolate} {
-      a {
-        display: block;
-      }
-    }
-  }
-}
-
-// Styles for link buttons and action links.
-li[class*="action--"] {
-  list-style: none;
-  padding: 0;
-  @include output-rhythm(margin, $medium 0);
 }
 
 
@@ -124,15 +98,19 @@ li[class*="action--"] {
 
 .js .dropbutton-wrapper {
   display: block;
+  min-height: 2em;
+  margin-right: 4px; // LTR
   position: relative;
-  @include output-rhythm(min-height, $medium * 2);
-  @include output-rhythm(margin-#{$flow-to}, 4px);
-  @include output-rhythm(margin-bottom, $medium);
+}
+
+[dir="rtl"] .js .dropbutton-wrapper {
+  margin-right: 0;
+  margin-left: 4px;
 }
 
 .dropbutton {
   input {
-    text-align: $flow-from;
+    text-align: left; // LTR
     @include output-rhythm(height, $form_input_button_select_height -$button-border-width * 2);
   }
 
@@ -170,7 +148,7 @@ li[class*="action--"] {
 
       &:hover,
       &:focus,
-      &:active {
+      &:actived {
         background: none;
         box-shadow: none;
       }
@@ -237,29 +215,30 @@ li[class*="action--"] {
 }
 
 
-// Show buttons as links.
-button {
-  &.link,
-  &.link:hover,
-  &.link:focus {
-    color: $link-color;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    opacity: 1;
-    margin: 0;
-    padding: 0;
-    cursor: pointer;
-  }
-
-  &.tableresponsive-toggle {
-    float: $flow-to;
-    @include cf;
-  }
-
-
+/**
+ * Show buttons as links.
+ */
+button.link {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  font-size: 1em;
 }
 
 label button.link {
   font-weight: bold;
 }
+
+
+/**
+ * Styles for link buttons and action links. TODO.
+ */
+li[class*="action--"] {
+  list-style: none;
+  padding: 0;
+  @include output-rhythm(margin, $medium 0);
+}
+
+

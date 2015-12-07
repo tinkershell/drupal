@@ -25,10 +25,6 @@
       margin: 0 0 0 25%;
     }
 
-    .markup-overrides-desc {
-      margin:0;
-    }
-
     .submit--advanced-settings {}
   }
 
@@ -58,19 +54,6 @@
 
     #edit-settings-font-google {
       width: 100%;
-    }
-
-    .web-font-desc {
-      padding: 0;
-      margin: 0;
-    }
-
-    #edit-settings-font-fallback--wrapper {
-      legend {
-        @include visually-hidden-off;
-        line-height: 1.295em;
-        font-weight: 700;
-      }
     }
   }
 
@@ -216,31 +199,20 @@
 
 
   // Shortcodes
-  #edit-shortcodes {
+  #edit-classes {
+    background-color: #fff;
 
-    #edit-title {
-      padding: 1em 0 0;
-    }
-
-    .pattern-image-clip {
-      width: 320px;
-      height: 80px;
-      background-color: #fff;
-      overflow: hidden;
-    }
-
-    .class-list {
-      dt {
-        float: left;
-        clear: right;
-      }
-
-      dt {width: 15em; font-weight: 700}
-      dd {}
+    fieldset {
+      border-bottom: 1px solid #ccc;
     }
   }
 
-
+  .pattern-image-clip {
+    width: 320px;
+    height: 80px;
+    background-color: #fff;
+    overflow: hidden;
+  }
 
 
   // Slideshows

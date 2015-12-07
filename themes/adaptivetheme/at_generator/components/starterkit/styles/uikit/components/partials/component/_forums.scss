@@ -1,12 +1,11 @@
 /**
  * Forums
  *  - see table.scss for generic table styles.
- ============================================================================ */
+ ========================================================================== */
 
-// Forum is a table.
+
+// Table selectors.
 .forum {
-  width: 100%;
-
   .indent {
     @include cf;
     @include output-rhythm(margin-#{$flow-from}, 33px);
@@ -33,7 +32,7 @@
 }
 
 
-// Forum id. Every top level forum has a unique numeric ID.
+// Forum id. Every top level forum has a unique ID.
 #forum-0 {}
 
 
@@ -59,18 +58,8 @@
 .forum-header__last-reply {}
 
 
-// Hide some columns in mobile devives.
-.forum [class*="__last-reply"],
-.forum [class*="__Last-reply"] {
+.forum [class*="__last-reply"] {
   white-space: nowrap;
-
-  @media #{$mobile-isolate} {
-    display: none;
-  }
-
-  @media #{$tablet-isolate} {
-    //display: none;
-  }
 }
 
 
@@ -108,17 +97,12 @@
 .forum-list__description {
   @include cf;
 
-  @include adjust-font-size-to($medium / 1.25); // 13px
+  @include adjust-font-size-to($medium/1.25); // 13px
   @include output-rhythm(margin, $xx-small $xx-small $xx-small 33px); // LTR, force the desc text to align with the forum name.
 
   // RTL
   [dir="rtl"] & {
     @include output-rhythm(margin, $xx-small 33px $xx-small $xx-small);
-  }
-
-  // Paragraph.
-  &:empty {
-    display: none;
   }
 }
 
@@ -128,27 +112,25 @@
 }
 
 .forum-list__posts {}
+
 .forum-list__last-reply {}
 
 
-// Topics
-.forum-list__forum__topic {}
-
-.forum__title {
-
-  @include cf;
-
-  a {}
-  .submitted {
-    @include adjust-font-size-to($medium * .875); // 14px
-  }
+// TODO rtl stuff
+[dir="rtl"] .forum-topic-navigation {
+  padding: 1em 3em 0 0;
 }
-
-.forum-list__forum__replies {}
-.forum-list__forum__last-reply {}
-
-
-
+[dir="rtl"] .forum-topic-navigation .topic-previous {
+  text-align: left;
+  float: right;
+}
+[dir="rtl"] .forum-topic-navigation .topic-next {
+  text-align: right;
+  float: left;
+}
+.action--forum {
+  list-style: none;
+}
 
 
 

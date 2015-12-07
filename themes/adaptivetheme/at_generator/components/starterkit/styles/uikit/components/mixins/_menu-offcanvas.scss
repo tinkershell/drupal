@@ -1,5 +1,4 @@
 // Off Canvas
-
 @mixin offcanvas($oc-position: left, $width: 15em, $arrows: false) {
 
   $pad-dir: padding-right;
@@ -15,13 +14,11 @@
   .ms-offcanvas {
 
     > .page {
-      transition: $global-transition;
+      transition: $transition_global;
     }
 
     .rm-toggle {
       float: $oc-position;
-      margin-#{$oc-position}: 0;
-      padding-#{$oc-position}: 0;
 
       &:before {
         font-family: $icon-font;
@@ -33,15 +30,9 @@
 
     .rm-block__content {
       opacity: .001;
-      display: none;
       #{$oc-position}: 0;
       transform: $transform_block;
-      transition: $global-transition;
-
-      .menu__link {
-        @include output-rhythm(padding, $xx-small $large);
-        @include output-rhythm(margin-bottom, 2px);
-      }
+      transition: $transition_global;
     }
 
     // Menu is open.

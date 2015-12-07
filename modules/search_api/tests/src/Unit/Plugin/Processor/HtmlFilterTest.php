@@ -44,8 +44,7 @@ class HtmlFilterTest extends UnitTestCase {
    */
   public function testTitleConfiguration($passed_value, $expected_value, $title_config) {
     $this->processor->setConfiguration(array('tags' => array(), 'title' => $title_config, 'alt' => FALSE));
-    $type = 'text';
-    $this->invokeMethod('processFieldValue', array(&$passed_value, &$type));
+    $this->invokeMethod('processFieldValue', array(&$passed_value, 'text'));
     $this->assertEquals($expected_value, $passed_value);
 
   }
@@ -82,8 +81,7 @@ class HtmlFilterTest extends UnitTestCase {
    */
   public function testAltConfiguration($passed_value, $expected_value, $alt_config) {
     $this->processor->setConfiguration(array('tags' => array('img' => '2'), 'title' => FALSE, 'alt' => $alt_config));
-    $type = 'text';
-    $this->invokeMethod('processFieldValue', array(&$passed_value, &$type));
+    $this->invokeMethod('processFieldValue', array(&$passed_value, 'text'));
     $this->assertEquals($expected_value, $passed_value);
   }
 
@@ -119,8 +117,7 @@ class HtmlFilterTest extends UnitTestCase {
    */
   public function testTagConfiguration($passed_value, $expected_value, array $tags_config) {
     $this->processor->setConfiguration(array('tags' => $tags_config, 'title' => TRUE, 'alt' => TRUE));
-    $type = 'text';
-    $this->invokeMethod('processFieldValue', array(&$passed_value, &$type));
+    $this->invokeMethod('processFieldValue', array(&$passed_value, 'text'));
     $this->assertEquals($expected_value, $passed_value);
   }
 
@@ -184,8 +181,7 @@ class HtmlFilterTest extends UnitTestCase {
 <span>This is hidden</span>';
     $expected_value = preg_replace('/\s+/', ' ', strip_tags($passed_value));
 
-    $type = 'string';
-    $this->invokeMethod('processFieldValue', array(&$passed_value, &$type));
+    $this->invokeMethod('processFieldValue', array(&$passed_value, 'string'));
     $this->assertEquals($expected_value, $passed_value);
   }
 

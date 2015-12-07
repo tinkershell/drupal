@@ -7,8 +7,7 @@
 
 namespace Drupal\search_api_db\Plugin\search_api\backend;
 
-use Drupal\Component\Render\FormattableMarkup;
-use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Database as CoreDatabase;
@@ -16,17 +15,16 @@ use Drupal\Core\Database\Query\Condition;
 use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Render\Element;
 use Drupal\search_api\Backend\BackendPluginBase;
 use Drupal\search_api\Entity\Index;
+use Drupal\search_api\SearchApiException;
 use Drupal\search_api\IndexInterface;
 use Drupal\search_api\Item\FieldInterface;
 use Drupal\search_api\Item\ItemInterface;
 use Drupal\search_api\Query\FilterInterface;
 use Drupal\search_api\Query\QueryInterface;
-use Drupal\search_api\SearchApiException;
 use Drupal\search_api\Utility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -43,11 +41,6 @@ class Database extends BackendPluginBase {
    * Multiplier for scores to have precision when converted from float to int.
    */
   const SCORE_MULTIPLIER = 1000;
-
-  /**
-   * The ID of the key-value store in which the indexes' DB infos are stored.
-   */
-  const INDEXES_KEY_VALUE_STORE_ID = 'search_api_db.indexes';
 
   /**
    * The database connection to use for this server.
@@ -83,13 +76,6 @@ class Database extends BackendPluginBase {
    * @var \Drupal\Core\Logger\LoggerChannelInterface|null
    */
   protected $logger;
-
-  /**
-   * The key-value store to use.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface
-   */
-  protected $keyValueStore;
 
   /**
    * The keywords ignored during the current search query.
@@ -148,10 +134,6 @@ class Database extends BackendPluginBase {
     $logger = $container->get('logger.factory')->get('search_api_db');
     $backend->setLogger($logger);
 
-    /** @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyvalue_factory */
-    $keyvalue_factory = $container->get('keyvalue');
-    $backend->setKeyValueStore($keyvalue_factory->get(self::INDEXES_KEY_VALUE_STORE_ID));
-
     return $backend;
   }
 
@@ -169,12 +151,9 @@ class Database extends BackendPluginBase {
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to use for this plugin.
-   *
-   * @return $this
    */
   public function setModuleHandler(ModuleHandlerInterface $module_handler) {
     $this->moduleHandler = $module_handler;
-    return $this;
   }
 
   /**
@@ -191,12 +170,9 @@ class Database extends BackendPluginBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory to use for this plugin.
-   *
-   * @return $this
    */
   public function setConfigFactory(ConfigFactoryInterface $config_factory) {
     $this->configFactory = $config_factory;
-    return $this;
   }
 
   /**
@@ -214,12 +190,9 @@ class Database extends BackendPluginBase {
    *
    * @param \Drupal\search_api\DataType\DataTypePluginManager $data_type_plugin_manager
    *   The new data type plugin manager.
-   *
-   * @return $this
    */
   public function setDataTypePluginManager($data_type_plugin_manager) {
     $this->dataTypePluginManager = $data_type_plugin_manager;
-    return $this;
   }
 
   /**
@@ -237,35 +210,9 @@ class Database extends BackendPluginBase {
    *
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger to use.
-   *
-   * @return $this
    */
   public function setLogger(LoggerChannelInterface $logger) {
     $this->logger = $logger;
-    return $this;
-  }
-
-  /**
-   * Retrieves the key-value store to use.
-   *
-   * @return \Drupal\Core\KeyValueStore\KeyValueStoreInterface
-   *   The key-value store.
-   */
-  public function getKeyValueStore() {
-    return $this->keyValueStore ? : \Drupal::keyValue(self::INDEXES_KEY_VALUE_STORE_ID);
-  }
-
-  /**
-   * Sets the key-value store to use.
-   *
-   * @param \Drupal\Core\KeyValueStore\KeyValueStoreInterface $keyValueStore
-   *   The key-value store.
-   *
-   * @return $this
-   */
-  public function setKeyValueStore(KeyValueStoreInterface $keyValueStore) {
-    $this->keyValueStore = $keyValueStore;
-    return $this;
   }
 
   /**
@@ -324,7 +271,7 @@ class Database extends BackendPluginBase {
         'database_text' => array(
           '#type' => 'item',
           '#title' => $this->t('Database'),
-          '#plain_text' => str_replace(':', ' > ', $this->configuration['database']),
+          '#markup' => SafeMarkup::checkPlain(str_replace(':', ' > ', $this->configuration['database'])),
         ),
       );
     }
@@ -363,12 +310,12 @@ class Database extends BackendPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function viewSettings() {
+  public function getExtraInformation() {
     $info = array();
 
     $info[] = array(
       'label' => $this->t('Database'),
-      'info' => str_replace(':', ' > ', $this->configuration['database']),
+      'info' => SafeMarkup::checkPlain(str_replace(':', ' > ', $this->configuration['database'])),
     );
     if ($this->configuration['min_chars'] > 1) {
       $info[] = array(
@@ -432,21 +379,21 @@ class Database extends BackendPluginBase {
    */
   public function preDelete() {
     $schema = $this->database->schema();
-
-    foreach ($this->getKeyValueStore()->getAll() as $db_info) {
-      // Delete the regular field tables.
-      foreach ($db_info['field_tables'] as $field) {
+    // Delete the regular field tables.
+    foreach ($this->configuration['field_tables'] as $index) {
+      foreach ($index as $field) {
         if ($schema->tableExists($field['table'])) {
           $schema->dropTable($field['table']);
         }
       }
+    }
 
-      // Delete the denormalized field tables.
-      if ($schema->tableExists($db_info['index_table'])) {
-        $schema->dropTable($db_info['index_table']);
+    // Delete the denormalized field tables.
+    foreach ($this->configuration['index_tables'] as $table) {
+      if ($schema->tableExists($table)) {
+        $schema->dropTable($table);
       }
     }
-    $this->getKeyValueStore()->deleteAll();
   }
 
   /**
@@ -458,15 +405,24 @@ class Database extends BackendPluginBase {
       $index_table = $this->findFreeTable('search_api_db_', $index->id());
       $this->createFieldTable(NULL, array('table' => $index_table));
 
-      $db_info = array();
-      $db_info['field_tables'] = array();
-      $db_info['index_table'] = $index_table;
-      $this->getKeyValueStore()->set($index->id(), $db_info);
-
-      // If there are no fields, we are done now.
+      // If there are no fields, we can take a shortcut.
       if (!$index->getFields()) {
+        if (!isset($this->configuration['field_tables'][$index->id()])) {
+          $this->configuration['field_tables'][$index->id()] = array();
+          $this->configuration['index_tables'][$index->id()] = $index_table;
+          $this->server->save();
+        }
+        elseif ($this->configuration['field_tables'][$index->id()]) {
+          $this->removeIndex($index);
+          $this->configuration['field_tables'][$index->id()] = array();
+          $this->configuration['index_tables'][$index->id()] = $index_table;
+          $this->server->save();
+        }
         return;
       }
+      $this->configuration += array('field_tables' => array(), 'index_tables' => array());
+      $this->configuration['field_tables'] += array($index->id() => array());
+      $this->configuration['index_tables'] += array($index->id() => $index_table);
     }
       // The database operations might throw PDO or other exceptions, so we catch
       // them all and re-wrap them appropriately.
@@ -637,28 +593,7 @@ class Database extends BackendPluginBase {
         $column => $index_spec,
       ),
     );
-
-    // This is a quick fix for a core bug, so we can run the tests with SQLite
-    // until this is fixed.
-    //
-    // In SQLite, indexes and tables can't have the same name, which is
-    // the case for Search API DB. We have following situation:
-    //  - a table named search_api_db_default_index_search_api_language
-    //  - a table named search_api_db_default_index
-    //
-    // The last table has an index on the search_api_language column,
-    // which results in an index with the same as the first table, which
-    // conflicts in SQLite.
-    //
-    // The core issue addressing this (https://www.drupal.org/node/1008128) was
-    // closed as it fixed the PostgresSQL part. The SQLite fix is added in
-    // https://www.drupal.org/node/2625664
-    // We prevent this by adding an extra underscore (which is also the proposed
-    // solution in the original core issue).
-    //
-    // @todo: Remove when #2625664 lands in Core. See #2625722 for a patch that
-    //   implements this.
-    $this->database->schema()->addIndex($db['table'], '_' . $column, $index_spec, $table_spec);
+    $this->database->schema()->addIndex($db['table'], $column, $index_spec, $table_spec);
 
     if ($new_table) {
       // Add a covering index for fields with multiple values.
@@ -703,7 +638,7 @@ class Database extends BackendPluginBase {
         return array('type' => 'int', 'size' => 'tiny');
 
       default:
-        throw new SearchApiException(new FormattableMarkup('Unknown field type @type. Database search module might be out of sync with Search API.', array('@type' => $type)));
+        throw new SearchApiException(SafeMarkup::format('Unknown field type @type. Database search module might be out of sync with Search API.', array('@type' => $type)));
     }
   }
 
@@ -722,14 +657,14 @@ class Database extends BackendPluginBase {
    */
   protected function fieldsUpdated(IndexInterface $index) {
     try {
-      $db_info = $this->getIndexDbInfo($index);
-      $fields = &$db_info['field_tables'];
+      $fields = &$this->configuration['field_tables'][$index->id()];
       $new_fields = $index->getFields();
 
       $reindex = FALSE;
       $cleared = FALSE;
+      $change = FALSE;
       $text_table = NULL;
-      $denormalized_table = $db_info['index_table'];
+      $denormalized_table = $this->configuration['index_tables'][$index->id()];
 
       foreach ($fields as $field_id => $field) {
         if (!isset($text_table) && Utility::isTextType($field['type'])) {
@@ -741,6 +676,7 @@ class Database extends BackendPluginBase {
           // The field is no longer in the index, drop the data.
           $this->removeFieldStorage($field_id, $field, $denormalized_table);
           unset($fields[$field_id]);
+          $change = TRUE;
           continue;
         }
         $old_type = $field['type'];
@@ -748,6 +684,7 @@ class Database extends BackendPluginBase {
         $fields[$field_id]['type'] = $new_type;
         $fields[$field_id]['boost'] = $new_fields[$field_id]->getBoost();
         if ($old_type != $new_type) {
+          $change = TRUE;
           if ($old_type == 'text' || $new_type == 'text') {
             // A change in fulltext status necessitates completely clearing the
             // index.
@@ -774,6 +711,7 @@ class Database extends BackendPluginBase {
           }
         }
         elseif ($new_type == 'text' && $field['boost'] != $new_fields[$field_id]->getBoost()) {
+          $change = TRUE;
           if (!$reindex) {
             $multiplier = $new_fields[$field_id]->getBoost() / $field['boost'];
             $this->database->update($text_table)
@@ -829,6 +767,7 @@ class Database extends BackendPluginBase {
 
         $fields[$field_id]['type'] = $field->getType();
         $fields[$field_id]['boost'] = $field->getBoost();
+        $change = TRUE;
       }
 
       // If needed, make sure the text table exists.
@@ -898,8 +837,9 @@ class Database extends BackendPluginBase {
         }
       }
 
-      $this->getKeyValueStore()->set($index->id(), $db_info);
-
+      if ($change) {
+        $this->server->save();
+      }
       return $reindex;
     }
       // The database operations might throw PDO or other exceptions, so we catch
@@ -949,25 +889,24 @@ class Database extends BackendPluginBase {
       ));
     }
 
-    $db_info = $this->getIndexDbInfo($index);
-
     try {
-      if (!isset($db_info['field_tables']) && !isset($db_info['index_table'])) {
+      if (!isset($this->configuration['field_tables'][$index->id()]) && !isset($this->configuration['index_tables'][$index->id()])) {
         return;
       }
       // Don't delete the index data of read-only indexes.
       if (!$index->isReadOnly()) {
-        foreach ($db_info['field_tables'] as $field) {
+        foreach ($this->configuration['field_tables'][$index->id()] as $field) {
           if ($this->database->schema()->tableExists($field['table'])) {
             $this->database->schema()->dropTable($field['table']);
           }
         }
-        if ($this->database->schema()->tableExists($db_info['index_table'])) {
-          $this->database->schema()->dropTable($db_info['index_table']);
+        if ($this->database->schema()->tableExists($this->configuration['index_tables'][$index->id()])) {
+          $this->database->schema()->dropTable($this->configuration['index_tables'][$index->id()]);
         }
       }
-
-      $this->getKeyValueStore()->delete($index->id());
+      unset($this->configuration['field_tables'][$index->id()]);
+      unset($this->configuration['index_tables'][$index->id()]);
+      $this->server->save();
     }
       // The database operations might throw PDO or other exceptions, so we catch
       // them all and re-wrap them appropriately.
@@ -980,8 +919,8 @@ class Database extends BackendPluginBase {
    * {@inheritdoc}
    */
   public function indexItems(IndexInterface $index, array $items) {
-    if (!$this->getIndexDbInfo($index)) {
-      throw new SearchApiException(new FormattableMarkup('No field settings for index with id @id.', array('@id' => $index->id())));
+    if (empty($this->configuration['field_tables'][$index->id()])) {
+      throw new SearchApiException(SafeMarkup::format('No field settings for index with id @id.', array('@id' => $index->id())));
     }
     $indexed = array();
     foreach ($items as $id => $item) {
@@ -991,7 +930,7 @@ class Database extends BackendPluginBase {
       }
       catch (\Exception $e) {
         // We just log the error, hoping we can index the other items.
-        $this->getLogger()->warning(Html::escape($e->getMessage()));
+        $this->getLogger()->warning(SafeMarkup::checkPlain($e->getMessage()));
       }
     }
     return $indexed;
@@ -1017,9 +956,7 @@ class Database extends BackendPluginBase {
     $fields = $this->getFieldInfo($index);
     $fields_updated = FALSE;
     $field_errors = array();
-    $db_info = $this->getIndexDbInfo($index);
-
-    $denormalized_table = $db_info['index_table'];
+    $denormalized_table = $this->configuration['index_tables'][$index->id()];
     $txn = $this->database->startTransaction('search_api_indexing');
     $text_table = $denormalized_table . '_text';
 
@@ -1032,16 +969,16 @@ class Database extends BackendPluginBase {
         // correctly. Therefore, to avoid DB errors, we re-check the tables
         // here before indexing.
         if (empty($fields[$name]['table']) && !$fields_updated) {
-          unset($db_info['field_tables'][$name]);
+          unset($this->configuration['field_tables'][$index->id()][$name]);
           $this->fieldsUpdated($index);
           $fields_updated = TRUE;
-          $fields = $db_info['field_tables'];
+          $fields = $this->configuration['field_tables'][$index->id()];
         }
         if (empty($fields[$name]['table']) && empty($field_errors[$name])) {
           // Log an error, but only once per field. Since a superfluous field is
           // not too serious, we just index the rest of the item normally.
           $field_errors[$name] = TRUE;
-          $this->getLogger()->warning("Unknown field @field: please check (and re-save) the index's fields settings.", array('@field' => $name));
+          $this->getLogger()->warning("Unknown field !field: please check (and re-save) the index's fields settings.", array('!field' => $name));
           continue;
         }
         $table = $fields[$name]['table'];
@@ -1299,7 +1236,7 @@ class Database extends BackendPluginBase {
         return strtotime($value);
 
       default:
-        throw new SearchApiException(new FormattableMarkup('Unknown field type @type. Database search module might be out of sync with Search API.', array('@type' => $type)));
+        throw new SearchApiException(SafeMarkup::format('Unknown field type @type. Database search module might be out of sync with Search API.', array('@type' => $type)));
     }
   }
 
@@ -1308,24 +1245,22 @@ class Database extends BackendPluginBase {
    */
   public function deleteItems(IndexInterface $index, array $item_ids) {
     try {
-      $db_info = $this->getIndexDbInfo($index);
-
-      if (empty($db_info['field_tables'])) {
+      if (empty($this->configuration['field_tables'][$index->id()])) {
         return;
       }
-      foreach ($db_info['field_tables'] as $field) {
+      foreach ($this->configuration['field_tables'][$index->id()] as $field) {
         $this->database->delete($field['table'])
           ->condition('item_id', $item_ids, 'IN')
           ->execute();
       }
       // Delete the denormalized field data.
-      $this->database->delete($db_info['index_table'])
+      $this->database->delete($this->configuration['index_tables'][$index->id()])
         ->condition('item_id', $item_ids, 'IN')
         ->execute();
     }
+      // The database operations might throw PDO or other exceptions, so we catch
+      // them all and re-wrap them appropriately.
     catch (\Exception $e) {
-      // The database operations might throw PDO or other exceptions, so we
-      // catch them all and re-wrap them appropriately.
       throw new SearchApiException($e->getMessage(), $e->getCode(), $e);
     }
   }
@@ -1335,16 +1270,14 @@ class Database extends BackendPluginBase {
    */
   public function deleteAllIndexItems(IndexInterface $index) {
     try {
-      $db_info = $this->getIndexDbInfo($index);
-
-      foreach ($db_info['field_tables'] as $field) {
+      foreach ($this->configuration['field_tables'][$index->id()] as $field) {
         $this->database->truncate($field['table'])->execute();
       }
-      $this->database->truncate($db_info['index_table'])->execute();
+      $this->database->truncate($this->configuration['index_tables'][$index->id()])->execute();
     }
     catch (\Exception $e) {
-      // The database operations might throw PDO or other exceptions, so we
-      // catch them all and re-wrap them appropriately.
+      // The database operations might throw PDO or other exceptions, so we catch
+      // them all and re-wrap them appropriately.
       throw new SearchApiException($e->getMessage(), $e->getCode(), $e);
     }
   }
@@ -1355,10 +1288,8 @@ class Database extends BackendPluginBase {
   public function search(QueryInterface $query) {
     $this->ignored = $this->warnings = array();
     $index = $query->getIndex();
-    $db_info = $this->getIndexDbInfo($index);
-
-    if (!isset($db_info['field_tables'])) {
-      throw new SearchApiException(new FormattableMarkup('Unknown index @id.', array('@id' => $index->id())));
+    if (!isset($this->configuration['field_tables'][$index->id()])) {
+      throw new SearchApiException(SafeMarkup::format('Unknown index @id.', array('@id' => $index->id())));
     }
     $fields = $this->getFieldInfo($index);
 
@@ -1387,10 +1318,10 @@ class Database extends BackendPluginBase {
       $sort = $query->getSorts();
       if ($sort) {
         foreach ($sort as $field_name => $order) {
-          if ($order != QueryInterface::SORT_ASC && $order != QueryInterface::SORT_DESC) {
-            $msg = $this->t('Unknown sort order @order. Assuming "@default".', array('@order' => $order, '@default' => QueryInterface::SORT_ASC));
-            $this->warnings[(string) $msg] = 1;
-            $order = QueryInterface::SORT_ASC;
+          if ($order != 'ASC' && $order != 'DESC') {
+            $msg = $this->t('Unknown sort order @order. Assuming "ASC".', array('@order' => $order));
+            $this->warnings[$msg] = $msg;
+            $order = 'ASC';
           }
           if ($field_name == 'search_api_relevance') {
             $db_query->orderBy('score', $order);
@@ -1402,9 +1333,9 @@ class Database extends BackendPluginBase {
           }
 
           if (!isset($fields[$field_name])) {
-            throw new SearchApiException(new FormattableMarkup('Trying to sort on unknown field @field.', array('@field' => $field_name)));
+            throw new SearchApiException(SafeMarkup::format('Trying to sort on unknown field @field.', array('@field' => $field_name)));
           }
-          $alias = $this->getTableAlias(array('table' => $db_info['index_table']), $db_query);
+          $alias = $this->getTableAlias(array('table' => $this->configuration['index_tables'][$index->id()]), $db_query);
           $db_query->orderBy($alias . '.' . $fields[$field_name]['column'], $order);
           // PostgreSQL automatically adds a field to the SELECT list when
           // sorting on it. Therefore, if we have aggregations present we also
@@ -1474,37 +1405,37 @@ class Database extends BackendPluginBase {
         );
       }
 
-      $fulltext_fields = $this->getQueryFulltextFields($query);
+      $fulltext_fields = $query->getFields();
       if ($fulltext_fields) {
-        $fulltext_field_information = array();
-        foreach ($fulltext_fields as $name) {
+        $_fulltext_fields = $fulltext_fields;
+        $fulltext_fields = array();
+        foreach ($_fulltext_fields as $name) {
           if (!isset($fields[$name])) {
-            throw new SearchApiException(new FormattableMarkup('Unknown field @field specified as search target.', array('@field' => $name)));
+            throw new SearchApiException(SafeMarkup::format('Unknown field @field specified as search target.', array('@field' => $name)));
           }
           if (!Utility::isTextType($fields[$name]['type'])) {
-            $types = $this->getDataTypePluginManager()->getInstances();
-            $type = $types[$fields[$name]['type']]->label();
-            throw new SearchApiException(new FormattableMarkup('Cannot perform fulltext search on field @field of type @type.', array('@field' => $name, '@type' => $type)));
+            $types = $this->getDataTypePluginManager()->getDataTypeDefinitions();
+            $type = $types[$fields[$name]['type']]['label'];
+            throw new SearchApiException(SafeMarkup::format('Cannot perform fulltext search on field @field of type @type.', array('@field' => $name, '@type' => $type)));
           }
-          $fulltext_field_information[$name] = $fields[$name];
+          $fulltext_fields[$name] = $fields[$name];
         }
 
-        $db_query = $this->createKeysQuery($keys, $fulltext_field_information, $fields, $query->getIndex());
+        $db_query = $this->createKeysQuery($keys, $fulltext_fields, $fields, $query->getIndex());
       }
       else {
         $this->getLogger()->warning('Search keys are given but no fulltext fields are defined.');
         $msg = $this->t('Search keys are given but no fulltext fields are defined.');
-        $this->warnings[(string) $msg] = 1;
+        $this->warnings[$msg] = 1;
       }
     }
     elseif ($keys_set) {
       $msg = $this->t('No valid search keys were present in the query.');
-      $this->warnings[(string) $msg] = 1;
+      $this->warnings[$msg] = 1;
     }
 
     if (!isset($db_query)) {
-      $db_info = $this->getIndexDbInfo($query->getIndex());
-      $db_query = $this->database->select($db_info['index_table'], 't');
+      $db_query = $this->database->select($this->configuration['index_tables'][$query->getIndex()->id()], 't');
       $db_query->addField('t', 'item_id', 'item_id');
       $db_query->addExpression(':score', 'score', array(':score' => self::SCORE_MULTIPLIER));
       $db_query->distinct();
@@ -1774,10 +1705,8 @@ class Database extends BackendPluginBase {
           // "a OR (NOT b)".
           $old_query = $db_query;
         }
-
         // We use this table because all items should be contained exactly once.
-        $db_info = $this->getIndexDbInfo($index);
-        $db_query = $this->database->select($db_info['index_table'], 't');
+        $db_query = $this->database->select($this->configuration['index_tables'][$index->id()], 't');
         $db_query->addField('t', 'item_id', 'item_id');
         if (!$neg) {
           $db_query->addExpression(':score', 'score', array(':score' => self::SCORE_MULTIPLIER));
@@ -1831,8 +1760,6 @@ class Database extends BackendPluginBase {
    */
   protected function createFilterCondition(FilterInterface $filter, array $fields, SelectInterface $db_query, IndexInterface $index) {
     $cond =  new Condition($filter->getConjunction());
-    $db_info = $this->getIndexDbInfo($index);
-
     $empty = TRUE;
     // Store whether a JOIN already occurred for a field, so we don't JOIN
     // repeatedly for OR filters.
@@ -1853,7 +1780,7 @@ class Database extends BackendPluginBase {
         // magic.
         // @todo Index the datasource explicitly so this doesn't need magic.
         if ($f[0] === 'search_api_datasource') {
-          $alias = $this->getTableAlias(array('table' => $db_info['index_table']), $db_query);
+          $alias = $this->getTableAlias(array('table' => $this->configuration['index_tables'][$index->id()]), $db_query);
           // @todo Stop recognizing "!=" as an operator.
           $operator = ($f[2] == '<>' || $f[2] == '!=') ? 'NOT LIKE' : 'LIKE';
           $prefix = Utility::createCombinedId($f[1], '');
@@ -1861,7 +1788,7 @@ class Database extends BackendPluginBase {
           continue;
         }
         if (!isset($fields[$f[0]])) {
-          throw new SearchApiException(new FormattableMarkup('Unknown field in filter clause: @field.', array('@field' => $f[0])));
+          throw new SearchApiException(SafeMarkup::format('Unknown field in filter clause: @field.', array('@field' => $f[0])));
         }
         $field = $fields[$f[0]];
         // Fields have their own table, so we have to check for NULL values in
@@ -1961,8 +1888,7 @@ class Database extends BackendPluginBase {
     $ret = array();
     foreach ($query->getOption('search_api_facets') as $key => $facet) {
       if (empty($fields[$facet['field']])) {
-        $msg = $this->t('Unknown facet field @field.', array('@field' => $facet['field']));
-        $this->warnings[(string) $msg] = 1;
+        $this->warnings[] = $this->t('Unknown facet field @field.', array('@field' => $facet['field']));
         continue;
       }
       $field = $fields[$facet['field']];
@@ -1988,13 +1914,9 @@ class Database extends BackendPluginBase {
 
       // If "Include missing facet" is disabled, we use an INNER JOIN and add IS
       // NOT NULL for shared tables.
-      $is_text_type = Utility::isTextType($field['type']);
       $alias = $this->getTableAlias($field, $select, TRUE, $facet['missing'] ? 'leftJoin' : 'innerJoin');
-      $select->addField($alias, $is_text_type ? 'word' : 'value', 'value');
-      if ($is_text_type) {
-        $select->condition("$alias.field_name", $this->getTextFieldName($facet['field']));
-      }
-      if (!$facet['missing'] && !$is_text_type) {
+      $select->addField($alias, Utility::isTextType($field['type']) ? 'word' : 'value', 'value');
+      if (!$facet['missing'] && !Utility::isTextType($field['type'])) {
         $select->isNotNull($alias . '.' . 'value');
       }
       $select->addExpression('COUNT(DISTINCT t.item_id)', 'num');
@@ -2102,20 +2024,14 @@ class Database extends BackendPluginBase {
     }
 
     $index = $query->getIndex();
-    $db_info = $this->getIndexDbInfo($index);
-    if (empty($db_info['field_tables'])) {
-      throw new SearchApiException(new FormattableMarkup('Unknown index @id.', array('@id' => $index->id())));
+    if (empty($this->configuration['field_tables'][$index->id()])) {
+      throw new SearchApiException(SafeMarkup::format('Unknown index @id.', array('@id' => $index->id())));
     }
     $fields = $this->getFieldInfo($index);
 
     $suggestions = array();
     $passes = array();
     $incomplete_like = NULL;
-
-    // Make the input lowercase as the indexed data is (usually) also all
-    // lowercase.
-    $incomplete_key = Unicode::strtolower($incomplete_key);
-    $user_input = Unicode::strtolower($user_input);
 
     // Decide which methods we want to use.
     if ($incomplete_key && $settings['suggest_suffix']) {
@@ -2158,8 +2074,7 @@ class Database extends BackendPluginBase {
       // We need a list of all current results to match the suggestions against.
       // However, since MySQL doesn't allow using a temporary table multiple
       // times in one query, we regrettably have to do it this way.
-      $fulltext_fields = $this->getQueryFulltextFields($query);
-      if (count($fulltext_fields) > 1) {
+      if (count($query->getFields()) > 1) {
         $all_results = $db_query->execute()->fetchCol();
         // Compute the total number of results so we can later sort out matches
         // that occur too often.
@@ -2186,7 +2101,7 @@ class Database extends BackendPluginBase {
 
       /** @var \Drupal\Core\Database\Query\SelectInterface|null $word_query */
       $word_query = NULL;
-      foreach ($fulltext_fields as $field) {
+      foreach ($query->getFields() as $field) {
         if (!isset($fields[$field]) || !Utility::isTextType($fields[$field]['type'])) {
           continue;
         }
@@ -2238,21 +2153,7 @@ class Database extends BackendPluginBase {
    *   is an associative array with information on the field.
    */
   protected function getFieldInfo(IndexInterface $index) {
-    $db_info = $this->getIndexDbInfo($index);
-    return $db_info['field_tables'];
-  }
-
-  /**
-   * Retrieve the database info for the given index, or some data from it.
-   *
-   * @param \Drupal\search_api\IndexInterface $index
-   *   The search index.
-   *
-   * @return array|string
-   *   The requested data from the key-value store.
-   */
-  protected function getIndexDbInfo(IndexInterface $index) {
-    return $this->getKeyValueStore()->get($index->id(), array());
+    return $this->configuration['field_tables'][$index->id()];
   }
 
   /**

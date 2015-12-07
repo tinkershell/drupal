@@ -24,7 +24,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   label = @Translation("Rendered item"),
  *   description = @Translation("Adds an additional field containing the rendered item as it would look when viewed."),
  *   stages = {
- *     "preprocess_index" = -30
+ *     "preprocess_index" = 0
  *   }
  * )
  */
@@ -223,8 +223,7 @@ class RenderedItem extends ProcessorPluginBase {
       'label' => $this->t('Rendered HTML output'),
       'description' => $this->t('The complete HTML which would be displayed when viewing the item'),
     );
-    $properties['rendered_item'] = BasicProperty::createFromDefinition($definition)
-      ->setIndexedLocked();
+    $properties['rendered_item'] = BasicProperty::createFromDefinition($definition)->setLocked();
   }
 
   /**
@@ -262,10 +261,7 @@ class RenderedItem extends ProcessorPluginBase {
       }
 
       $build = $datasource->viewItem($item->getOriginalObject(), $view_mode);
-      $value = (string) $this->getRenderer()->renderPlain($build);
-      if ($value) {
-        $field->addValue($value);
-      }
+      $field->addValue($this->getRenderer()->renderPlain($build));
     }
 
     if ($unset_view_modes > 0) {

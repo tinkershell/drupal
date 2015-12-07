@@ -1,14 +1,10 @@
 /**
  * Form Common - common styles for form elements and classes.
- ============================================================================ */
+ ========================================================================== */
 
-.form-text {
-  appearance: none;
-
-  // Give contact and comment subject forms some symmetry.
-  &[name="subject[0][value]"] {
-    width: 50%;
-  }
+// Give contact and comment subject forms some symetry.
+.form-text[name="subject[0][value]"] {
+  width: 50%;
 }
 
 // Punch these to full width on smaller devices.
@@ -35,17 +31,15 @@
 
 // Radio and checkbox items are radically restyled to stretch the label
 // underneath the input using padding and margin, this gives a bigger target
-// for touch/clicks. This is usually known as a "button zone", see:
+// for touch/clicks. This is ususally known as a "button zone", see:
 // http://uxmovement.com/forms/ways-to-make-checkboxes-radio-buttons-easier-to-click/
 .form-type-radio,
 .form-type-checkbox {
   @include output-rhythm(margin, 0 0 $xxxx-small $xxx-small);
 
   .option {
-    @include output-rhythm(padding, $xxxx-small $xx-small $xxxx-small $xx-large);
-    @include output-rhythm(margin-#{$flow-from}, -30px);
-    @include output-rhythm(min-height, $xx-large);
-
+    @include output-rhythm(padding, $xxxx-small $xx-small 0 $xx-large);
+    @include output-rhythm(margin-#{$flow-from}, -#{$x-large});
     min-width: 50%;
     border-style: $form-border-style;
     border-width: $form-border-width;
@@ -119,6 +113,11 @@ h4.label,
 }
 
 
+// Marker
+.marker {
+}
+
+
 // Form required.
 .form-required:after {
   content: " \204E "; // Use a Unicode symbol to prevent screen readers from announcing the text.
@@ -176,41 +175,6 @@ abbr {
 }
 
 
-// Form Composite inline, e.g. dialog
-// TODO check https://www.drupal.org/node/2236789 when it lands.
-.form-composite--inline {
-
-  legend {
-    float: $flow-from;
-    margin-#{$flow-to}: 0.5em;
-    margin-top: 1px;
-
-    @media screen and (min-width: 321px) {
-      margin-#{$flow-to}: 1em;
-    }
-  }
-
-  .fieldset-legend:after {
-    content: ':';
-  }
-
-  input[type="radio"],
-  label {
-    vertical-align: middle;
-  }
-
-  label:after {
-    content: none;
-  }
-
-  @media screen and (min-width: 480px) {
-    .form-item {
-      margin-#{$flow-to}: 1.25em;
-    }
-  }
-}
-
-
 // Fields in forms.
 form {
   // Form field image
@@ -218,7 +182,7 @@ form {
     .image-preview {
       padding: 0;
       background: transparent;
-      @include output-rhythm(margin, 0 $medium $medium 0);
+      @include output-rhythm(margin, 0 $medium $medium 0); // LTR
 
       // RTL
       [dir="rtl"] & {
@@ -243,10 +207,10 @@ form {
 
     .field-multiple-drag {
       width: 30px;
-      padding-right: 0;
+      padding-right: 0; // LTR
 
       .tabledrag-handle {
-        padding-right: .5em;
+        padding-right: .5em; // LTR
       }
 
       // RTL for table drag.
@@ -269,7 +233,7 @@ form {
 // Autocomplete.
 .ui-autocomplete li.ui-menu-item a.ui-state-focus,
 .autocomplete li.ui-menu-item a.ui-state-hover {
-  background: #0072b9; // TODO check background color.
+  background: #0072b9; // TODO check background color
   color: #fff;
   margin: 0;
 }
@@ -289,18 +253,12 @@ details {
     &:before {
       font-family: $icon-font;
       content: $form-details-summary-open; // LTR
+
       float: left;
       margin: -1px 0 0;
 
       @include output-rhythm(height, $medium);
       @include output-rhythm(width, $medium);
-
-      display: none;
-
-      // Wait for FontAwesome to load.
-      .fa-loaded & {
-        display: block;
-      }
 
       // RTL
       [dir="rtl"] & {
@@ -346,24 +304,3 @@ details {
     color: inherit;
   }
 }
-
-
-// CK Editor
-.cke_editable {
-  padding: 5px 10px;
-}
-
-
-// Pet peeves with core forms
-.field-storage-config-edit-form {
-  .container-inline {
-    display: block;
-  }
-  .form-select {
-    min-width: auto;
-  }
-}
-
-
-
-

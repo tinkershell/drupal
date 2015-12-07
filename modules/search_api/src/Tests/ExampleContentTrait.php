@@ -36,8 +36,8 @@ trait ExampleContentTrait {
   protected function insertExampleContent() {
     $count = \Drupal::entityQuery('entity_test')->count()->execute();
 
-    $entity_test_storage = \Drupal::entityManager()->getStorage('entity_test');
-    $this->entities[1] = $entity_test_storage->create(array(
+    $this->entities[1] = entity_create('entity_test', array(
+        'id' => 1,
         'name' => 'foo bar baz',
         'body' => 'test test',
         'type' => 'item',
@@ -45,7 +45,8 @@ trait ExampleContentTrait {
         'category' => 'item_category'
       ));
     $this->entities[1]->save();
-    $this->entities[2] = $entity_test_storage->create(array(
+    $this->entities[2] = entity_create('entity_test', array(
+        'id' => 2,
         'name' => 'foo test',
         'body' => 'bar test',
         'type' => 'item',
@@ -53,13 +54,15 @@ trait ExampleContentTrait {
         'category' => 'item_category'
       ));
     $this->entities[2]->save();
-    $this->entities[3] = $entity_test_storage->create(array(
+    $this->entities[3] = entity_create('entity_test', array(
+        'id' => 3,
         'name' => 'bar',
         'body' => 'test foobar',
         'type' => 'item',
       ));
     $this->entities[3]->save();
-    $this->entities[4] = $entity_test_storage->create(array(
+    $this->entities[4] = entity_create('entity_test', array(
+        'id' => 4,
         'name' => 'foo baz',
         'body' => 'test test test',
         'type' => 'article',
@@ -67,7 +70,8 @@ trait ExampleContentTrait {
         'category' => 'article_category'
       ));
     $this->entities[4]->save();
-    $this->entities[5] = $entity_test_storage->create(array(
+    $this->entities[5] = entity_create('entity_test', array(
+        'id' => 5,
         'name' => 'bar baz',
         'body' => 'foo',
         'type' => 'article',

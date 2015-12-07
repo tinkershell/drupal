@@ -6,7 +6,7 @@
 
 namespace Drupal\devel_node_access;
 
-use Drupal\Core\Block\BlockBase;
+use Drupal\block\BlockBase;
 
 /**
  * Provides the base class for the Devel Node Access blocks.

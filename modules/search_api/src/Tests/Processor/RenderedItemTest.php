@@ -42,7 +42,7 @@ class RenderedItemTest extends ProcessorTestBase {
    *
    * @var string[]
    */
-  public static $modules = array('user', 'node', 'search_api','search_api_db', 'search_api_test_backend', 'comment', 'system');
+  public static $modules = array('user', 'node', 'search_api','search_api_db', 'search_api_test_backend', 'comment', 'entity_reference', 'system');
 
   /**
    * Performs setup tasks before each individual test method is run.
@@ -142,9 +142,6 @@ class RenderedItemTest extends ProcessorTestBase {
       $field = $item->getField('rendered_item');
       $this->assertEqual($field->getType(), 'text', 'Node item ' . $nid . ' rendered value is identified as text.');
       $values = $field->getValues();
-      // Test that the value is a string (not, e.g., a SafeString object).
-      $this->assertTrue(is_string($values[0]), 'Node item ' . $nid . ' rendered value is a string.');
-      $this->assertEqual(1, count($values), 'Node item ' . $nid . ' rendered value is a single value.');
       // These tests rely on the template not changing. However, if we'd only
       // check whether the field values themselves are included, there could
       // easier be false positives. For example the title text was present even

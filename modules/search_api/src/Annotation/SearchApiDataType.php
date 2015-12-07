@@ -38,10 +38,12 @@ class SearchApiDataType extends Plugin {
   public $label;
 
   /**
-   * Whether this is one of the default data types provided by the Search API.
+   * The description of the data type.
    *
-   * @var bool
+   * @ingroup plugin_translatable
+   *
+   * @var \Drupal\Core\Annotation\Translation
    */
-  public $default = FALSE;
+  public $description;
 
 }

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Contains \Drupal\search_api\Property\PropertyTrait.
@@ -19,14 +18,7 @@ trait PropertyTrait {
    *
    * @var bool
    */
-  protected $indexedLocked = FALSE;
-
-  /**
-   * The locked state of the property's type.
-   *
-   * @var bool
-   */
-  protected $typeLocked = FALSE;
+  protected $locked = FALSE;
 
   /**
    * The hidden state of the property.
@@ -43,53 +35,28 @@ trait PropertyTrait {
   protected $fieldSettings = array();
 
   /**
-   * Sets the indexed locked state for the property.
+   * Sets the locked state.
    *
-   * @param bool $indexed_locked
-   *   (optional) The new indexed locked state for the property.
+   * @param bool $locked
+   *   (optional) The new locked state.
    *
    * @return $this
    */
-  public function setIndexedLocked($indexed_locked = TRUE) {
-    $this->indexedLocked = $indexed_locked;
+  public function setLocked($locked = TRUE) {
+    $this->locked = $locked;
     return $this;
   }
 
   /**
-   * Determines whether the property should always be indexed.
+   * Determines whether this processor should always be enabled.
    *
    * @return bool
-   *   TRUE if this indexed property should be locked; FALSE otherwise.
+   *   TRUE if this processor should be forced enabled; FALSE otherwise.
    *
-   * @see \Drupal\search_api\Property\PropertyInterface::isIndexedLocked()
+   * @see \Drupal\search_api\Property\PropertyInterface::isLocked()
    */
-  public function isIndexedLocked() {
-    return $this->indexedLocked;
-  }
-
-  /**
-   * Sets the type locked state for the property.
-   *
-   * @param bool $type_locked
-   *   (optional) The new type locked state for the property.
-   *
-   * @return $this
-   */
-  public function setTypeLocked($type_locked = TRUE) {
-    $this->typeLocked = $type_locked;
-    return $this;
-  }
-
-  /**
-   * Determines whether the type of this property should be locked.
-   *
-   * @return bool
-   *   TRUE if the type should be locked; FALSE otherwise.
-   *
-   * @see \Drupal\search_api\Property\PropertyInterface::isTypeLocked()
-   */
-  public function isTypeLocked() {
-    return $this->typeLocked;
+  public function isLocked() {
+    return $this->locked;
   }
 
   /**

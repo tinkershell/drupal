@@ -17,7 +17,7 @@ use Drupal\search_api\Property\BasicProperty;
  *   label = @Translation("URL field"),
  *   description = @Translation("Adds the item's URL to the indexed data."),
  *   stages = {
- *     "preprocess_index" = -30
+ *     "preprocess_index" = 0
  *   }
  * )
  */
@@ -35,8 +35,7 @@ class AddURL extends ProcessorPluginBase {
       'description' => $this->t('A URI where the item can be accessed'),
       'type' => 'uri',
     );
-    $properties['search_api_url'] = BasicProperty::createFromDefinition($definition)
-      ->setIndexedLocked();
+    $properties['search_api_url'] = BasicProperty::createFromDefinition($definition)->setLocked();
   }
 
   /**

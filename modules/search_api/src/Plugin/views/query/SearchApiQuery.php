@@ -7,9 +7,7 @@
 
 namespace Drupal\search_api\Plugin\views\query;
 
-use Drupal\Component\Render\FormattableMarkup;
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\search_api\Entity\Index;
@@ -107,41 +105,22 @@ class SearchApiQuery extends QueryPluginBase {
   public $group_operator = 'AND';
 
   /**
-   * Loads the search index belonging to the given Views base table.
-   *
-   * @param string $table
-   *   The Views base table ID.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   (optional) The entity manager to use.
-   *
-   * @return \Drupal\search_api\IndexInterface|null
-   *   The requested search index, or NULL if it could not be found and loaded.
-   */
-  public static function getIndexFromTable($table, EntityManagerInterface $entity_manager = NULL) {
-    if (substr($table, 0, 17) == 'search_api_index_') {
-      $index_id = substr($table, 17);
-      if ($entity_manager) {
-        return $entity_manager->getStorage('search_api_index')->load($index_id);
-      }
-      return Index::load($index_id);
-    }
-    return NULL;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
     try {
       parent::init($view, $display, $options);
       $this->fields = array();
-      $this->index = self::getIndexFromTable($view->storage->get('base_table'));
-      if (!$this->index) {
-        $this->abort(new FormattableMarkup('View %view is not based on Search API but tries to use its query plugin.', array('%view' => $view->storage->label())));
+      if (substr($view->storage->get('base_table'), 0, 17) == 'search_api_index_') {
+        $id = substr($view->storage->get('base_table'), 17);
+        $this->index = Index::load($id);
+        $this->query = $this->index->query(array(
+          'parse mode' => $this->options['parse_mode'],
+        ));
       }
-      $this->query = $this->index->query(array(
-        'parse mode' => $this->options['parse_mode'],
-      ));
+      else {
+        $this->abort(SafeMarkup::format('View %view is not based on Search API but tries to use its query plugin.', array('%view' => $view->storage->label())));
+      }
     }
     catch (\Exception $e) {
       $this->abort($e->getMessage());
@@ -333,7 +312,7 @@ class SearchApiQuery extends QueryPluginBase {
     if ($this->shouldAbort()) {
       if (error_displayable()) {
         foreach ($this->errors as $msg) {
-          drupal_set_message(Html::escape($msg), 'error');
+          drupal_set_message(SafeMarkup::checkPlain($msg), 'error');
         }
       }
       $view->result = array();
@@ -435,21 +414,17 @@ class SearchApiQuery extends QueryPluginBase {
     $rows = array();
     $missing = array();
 
-    if (!empty($this->configuration['entity_access'])) {
-      $items = $this->index->loadItemsMultiple(array_keys($results));
-      $results = array_intersect_key($results, $items);
-      /** @var \Drupal\Core\Entity\Plugin\DataType\EntityAdapter $item */
-      foreach ($items as $item_id => $item) {
-        if (!$item->getValue()->access('view')) {
-          unset($results[$item_id]);
-        }
-      }
-    }
-
     // First off, we try to gather as much field values as possible without
     // loading any items.
     foreach ($results as $item_id => $result) {
       $datasource_id = $result->getDatasourceId();
+
+      /*if (!empty($this->options['entity_access'])) {
+        $entity = entity_load($this->index->item_type, $id);
+        if (!$entity[$id]->access('view')) {
+          continue;
+        }
+      }*/
 
       // @todo Find a more elegant way of passing metadata here.
       $values['search_api_id'] = $item_id;
@@ -508,9 +483,6 @@ class SearchApiQuery extends QueryPluginBase {
 
     // Finally, add all rows to the Views result set.
     $view->result = array_values($rows);
-    array_walk($view->result, function (ResultRow $row, $index) {
-      $row->index = $index;
-    });
   }
 
   /**
@@ -594,11 +566,12 @@ class SearchApiQuery extends QueryPluginBase {
    * @throws \Drupal\search_api\SearchApiException
    *   Thrown if one of the fields isn't of type "text".
    *
-   * @see \Drupal\search_api\Query\QueryInterface::setFulltextFields()
+   * @see \Drupal\search_api\Query\QueryInterface::fields()
    */
-  public function setFulltextFields($fields = NULL) {
+  // @todo Allow calling with NULL, and maybe rename to setFulltextFields().
+  public function fields(array $fields) {
     if (!$this->shouldAbort()) {
-      $this->query->setFulltextFields($fields);
+      $this->query->fields($fields);
     }
     return $this;
   }
@@ -766,16 +739,17 @@ class SearchApiQuery extends QueryPluginBase {
   /**
    * Retrieves the fulltext fields that will be searched for the search keys.
    *
-   * @return string[]|null
+   * @return array
    *   An array containing the fields that should be searched for the search
    *   keys.
    *
-   * @see setFulltextFields()
-   * @see \Drupal\search_api\Query\QueryInterface::getFulltextFields()
+   * @see fields()
+   *
+   * @see \Drupal\search_api\Query\QueryInterface::getFields()
    */
-  public function &getFulltextFields() {
+  public function &getFields() {
     if (!$this->shouldAbort()) {
-      return $this->query->getFulltextFields();
+      return $this->query->getFields();
     }
     $ret = NULL;
     return $ret;
