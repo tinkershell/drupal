@@ -7,10 +7,10 @@
 
 namespace Drupal\search_api\Query;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\search_api\SearchApiException;
 use Drupal\search_api\IndexInterface;
+use Drupal\search_api\SearchApiException;
 
 /**
  * Provides a standard implementation for a Search API query.
@@ -111,12 +111,12 @@ class Query implements QueryInterface {
    */
   public function __construct(IndexInterface $index, ResultsCacheInterface $results_cache, array $options = array()) {
     if (!$index->status()) {
-      throw new SearchApiException(SafeMarkup::format("Can't search on index %index which is disabled.", array('%index' => $index->label())));
+      throw new SearchApiException(new FormattableMarkup("Can't search on index %index which is disabled.", array('%index' => $index->label())));
     }
     if (isset($options['parse mode'])) {
       $modes = $this->parseModes();
       if (!isset($modes[$options['parse mode']])) {
-        throw new SearchApiException(SafeMarkup::format('Unknown parse mode: @mode.', array('@mode' => $options['parse mode'])));
+        throw new SearchApiException(new FormattableMarkup('Unknown parse mode: @mode.', array('@mode' => $options['parse mode'])));
       }
     }
     $this->index = $index;
@@ -239,11 +239,7 @@ class Query implements QueryInterface {
   /**
    * {@inheritdoc}
    */
-  public function fields(array $fields) {
-    $fulltext_fields = $this->index->getFulltextFields();
-    foreach (array_diff($fields, $fulltext_fields) as $field_id) {
-      throw new SearchApiException(SafeMarkup::format('Trying to search on field @field which is no indexed fulltext field.', array('@field' => $field_id)));
-    }
+  public function setFulltextFields(array $fields = NULL) {
     $this->fields = $fields;
     return $this;
   }
@@ -267,16 +263,8 @@ class Query implements QueryInterface {
   /**
    * {@inheritdoc}
    */
-  public function sort($field, $order = 'ASC') {
-    $fields = $this->index->getOption('fields', array());
-    $fields += array(
-      'search_api_relevance' => array('type' => 'decimal'),
-      'search_api_id' => array('type' => 'integer'),
-    );
-    if (empty($fields[$field])) {
-      throw new SearchApiException(SafeMarkup::format('Trying to sort on unknown field @field.', array('@field' => $field)));
-    }
-    $order = strtoupper(trim($order)) == 'DESC' ? 'DESC' : 'ASC';
+  public function sort($field, $order = self::SORT_ASC) {
+    $order = strtoupper(trim($order)) == self::SORT_DESC ? self::SORT_DESC : self::SORT_ASC;
     $this->sorts[$field] = $order;
     return $this;
   }
@@ -318,11 +306,6 @@ class Query implements QueryInterface {
     // Make sure to only execute this once per query.
     if (!$this->preExecuteRan) {
       $this->preExecuteRan = TRUE;
-
-      // Add fulltext fields, unless set
-      if ($this->fields === NULL) {
-        $this->fields = $this->index->getFulltextFields();
-      }
 
       // Preprocess query.
       $this->index->preprocessSearchQuery($this);
@@ -370,7 +353,7 @@ class Query implements QueryInterface {
   /**
    * {@inheritdoc}
    */
-  public function &getFields() {
+  public function &getFulltextFields() {
     return $this->fields;
   }
 

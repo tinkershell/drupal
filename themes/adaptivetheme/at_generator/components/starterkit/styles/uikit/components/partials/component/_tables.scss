@@ -1,9 +1,15 @@
 /**
  * Table Theme
  * Style Drupal selectors for tables.
- ========================================================================== */
+ ============================================================================ */
 
 table {
+
+  // If for some crazy reason this theme is used in admin, set tables to be
+  // 100% width.
+  .path-admin & {
+    width: 100%;
+  }
 
   // Prevent the sticky header from hiding behind other content.
   &.sticky-header {
@@ -29,37 +35,54 @@ table {
   ul {
     margin: 0;
   }
+
+  // Support align attribute.
+  &[align='right'] {
+    @include output-rhythm(margin-left, $medium);
+  }
+
+  &[align='left'] {
+    @include output-rhythm(margin-right, $medium);
+  }
+
+  @media #{$mobile-isolate} {
+    &[align='right'],
+    &[align='left'] {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  // Set responsive enabled tables to full width.
+  &.responsive-enabled {
+    width: 100%;
+  }
 }
 
 
-// tr, takes extensive styles if enabled in variables.scss.
-// color is applied in _theme.color.scss to most of these selectors.
+// tr, takes extensive styles if enabled in variables.scss. Color is applied in
+//_theme.color.scss to most of these selectors.
 tr {
   // Row striping (zebra).
   @if $table-row-striping == true {
-    &.odd {
-    }
+    &.odd {}
 
-    // nth-child class will capture tables in content that do not
-    // include the odd/even classes.
+    // nth-child class will capture tables in content that do not include the
+    // odd/even classes.
     &.info,
     &.even,
-    &:nth-child(2n+2)  {
-    }
+    &:nth-child(2n+2) {}
   }
 
   // Hover color.
   @if $tr-hover == true {
-    &:hover {
-    }
+    &:hover {}
   }
 
   // Column striping, applies to the active column in sortable tables.
   @if $table-col-striping == true {
-    &.odd td.active {
-    }
-    &.even td.active {
-    }
+    &.odd td.active {}
+    &.even td.active {}
   }
 }
 
@@ -81,6 +104,35 @@ th {
   th,
   td {
     border-width: $border-width;
+
+    // Attempt to support border attributes up to 10px
+    [border='2'] & {
+      border-width: $border-width * 2;
+    }
+    [border='3'] & {
+      border-width: $border-width * 3;
+    }
+    [border='4'] & {
+      border-width: $border-width * 4;
+    }
+    [border='5'] & {
+      border-width: $border-width * 5;
+    }
+    [border='6'] & {
+      border-width: $border-width * 6;
+    }
+    [border='7'] & {
+      border-width: $border-width * 7;
+    }
+    [border='8'] & {
+      border-width: $border-width * 8;
+    }
+    [border='9'] & {
+      border-width: $border-width * 9;
+    }
+    [border='10'] & {
+      border-width: $border-width * 10;
+    }
   }
 }
 
@@ -91,3 +143,6 @@ thead {
     display: inline;
   }
 }
+
+
+

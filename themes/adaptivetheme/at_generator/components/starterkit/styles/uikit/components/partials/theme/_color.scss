@@ -1,11 +1,11 @@
 /**
  * Color
- ========================================================================== */
+ ============================================================================ */
 
 
 /**
  * base.elements
- ========================================================================== */
+ ============================================================================ */
 
 // html and body
 html,
@@ -86,7 +86,7 @@ hr {
  * Page
  *  - mainly for markup that is printed directly in page.html.twig and
  *    .l-r {}
- ========================================================================== */
+ ============================================================================ */
 
 // Page wrapper.
 .page {
@@ -103,18 +103,21 @@ hr {
 
 //  Page Rows - these match the Site Builder layout.
 
-// Messages
-.pr-messages {}
-
-
-// Messages
-.pr-leaderboard {}
+// Leaderboard
+.pr-leaderboard {    // Outer wrapper
+  &__rw {}           // Regions wrapper (container that takes max-width from your layout settings)
+  &__leaderboard {}  // Region
+}
 
 
 // Header
 .pr-header {
   color: $page-header-color;
   @include page-row-background-color($page-header-background-color, $page-row-fullwidth);
+
+  &__rw {}
+  &__header-first {}
+  &__header-second {}
 }
 
 
@@ -124,9 +127,19 @@ hr {
   @include page-row-background-color($page-navbar-background-color, $page-row-fullwidth);
 
   a,
-  .menu a {
+  .menu__link {
     color: inherit;
   }
+
+  &__rw {}
+  &__navbar {}
+}
+
+
+// Highlighted
+.pr-highlighted {
+  &__rw {}
+  &__highlighted {}
 }
 
 
@@ -134,17 +147,47 @@ hr {
 .pr-features {
   color: $page-features-color;
   @include page-row-background-color($page-features-background-color, $page-row-fullwidth);
+
+  &__rw {}
+  &__features-first {}
+  &__features-second {}
+  &__features-third {}
+}
+
+
+// Content prefix
+.pr-content-prefix {
+  &__rw {}
+  &__content-prefix {}
 }
 
 
 // Main
-.pr-main {}
+.pr-main {
+  &__rw {}
+  &__content {}
+  &__sidebar-first {}
+  &__sidebar-second {}
+}
+
+
+// Content suffix
+.pr-content-suffix {
+  &__rw {}
+  &__content-suffix {}
+}
 
 
 // Sub features
 .pr-subfeatures {
   color: $page-subfeatures-color;
   @include page-row-background-color($page-subfeatures-background-color, $page-row-fullwidth);
+
+  &__rw {}
+  &__subfeatures-first {}
+  &__subfeatures-second {}
+  &__subfeatures-third {}
+  &__subfeatures-fourth {}
 }
 
 
@@ -154,7 +197,7 @@ hr {
   @include page-row-background-color($page-footer-background-color, $page-row-fullwidth);
 
   a,
-  .menu a {
+  .menu__link {
     color: inherit;
 
     &.active,
@@ -163,10 +206,17 @@ hr {
       color: inherit;
     }
   }
+
+  &__rw {}
+  &__footer {}
 }
 
-// Theme attribution message. This is a toggle setting in the advanced theme
-// settings, you can turn it on/off using the Markup overrides extension.
+
+/**
+ * AT attribution message
+ *  - a toggle setting in the theme settings, you can turn it on/off using
+ *    the Markup overrides extension.
+ ============================================================================ */
 .attribution {
   .l-rw {
     background-color: transparent;
@@ -177,9 +227,10 @@ hr {
 }
 
 
-// Feed icon
-// SVG icon, SEE feed-icon.html.twig in AT Core templates directory.
-// Clear the cache if you add or change classes in the template file.
+/**
+ * Feed Icons
+ *  - icons are SVG, SEE feed-icon.html.twig in AT Core templates directory.
+ ============================================================================ */
 .feed-icon-rss__path {
   fill: rgba(0, 0, 0, 0.6);
 }
@@ -188,7 +239,7 @@ hr {
 /**
  * Branding styles
  *  - Drupal core branding block.
- ========================================================================== */
+ ============================================================================ */
 
 .block--system-branding-block {}
 
@@ -204,7 +255,7 @@ hr {
 
 /**
  * Blocks
- ========================================================================== */
+ ============================================================================ */
 
 .block {}
 .block__title {}
@@ -215,13 +266,13 @@ hr {
  *  - style Drupal core block menus.
  *  - for the drop menu and other responsive menus see the mixins and the
  *    _navbar.scss partial.
- ========================================================================== */
+ ============================================================================ */
 
 .menu {
-
+  &__link {}
   // Nested menus.
   .menu {
-    a {
+    &__link {
       &:hover,
       &:focus {}
       &.active-trail {}
@@ -229,41 +280,42 @@ hr {
   }
 }
 
-.menu-item {
-  &.active-trail > a {
+.menu__item {
+  &--active-trail > .menu__link {
     //color: $menu-active-color;
     //background-color: $menu-background-active-color;
   }
 
-  // If menu arrows are true, add font-awesome and icons for
-  // expanded and collapsed selectors.
+  // If menu arrows are true.
   @if $menu-arrows == true {
-    &--collapsed > a:after,
-    &--expanded > a:after {
-      color: $text-color;
-    }
-  }
-
-  a {
-    color: $menu-color;
-    border-color: $border-color;
-    //background-color: $menu-background-color;
-
-    &:hover,
-    &:focus {
-      color: $menu-hover-color;
-      //background-color: $menu-background-hover-color;
-    }
-
-    &.active {
-      color: $menu-active-color;
-      //background-color: $menu-background-active-color;
+    &--collapsed,
+    &--expanded {
+      > .menu__link:after {
+        //color: $text-color;
+      }
     }
   }
 
   // Add the border top to the first item only.
-  &:first-child a {
+  &:first-child .menu__link {
     border-color: $border-color;
+  }
+}
+
+.menu__link {
+  color: $menu-color;
+  border-color: $border-color;
+  //background-color: $menu-background-color;
+
+  &:hover,
+  &:focus {
+    color: $menu-hover-color;
+    //background-color: $menu-background-hover-color;
+  }
+
+  &.active {
+    color: $menu-active-color;
+    //background-color: $menu-background-active-color;
   }
 }
 
@@ -295,7 +347,7 @@ hr {
  *  1. Sass/CSS defined here (with breakpoints etc).
  *  2. jQuery: responsive-menus.js in AT Core libraries which adds/toggles classes.
  *  3. Theme settings as set in your themes Advanced extention settings.
- ========================================================================== */
+ ============================================================================ */
 
 
 // Aggressively force the menu to inherit the page/regions background,
@@ -321,14 +373,14 @@ hr {
 // and overall design of the menu.
 .rm-block__content {
   .menu {
-    li {
-      &.active-trail > a {
+    &__item {
+      &--active-trail > a {
         color: $resp-menu-active-color;
         background: $resp-menu-active-background-color;
       }
     }
 
-    a {
+    &__link {
       color: $resp-menu-color;
       background: $resp-menu-background-color;
 
@@ -385,8 +437,8 @@ hr {
 .ms-slidedown {
   .rm-block__content {
     .menu {
-      a.active[href="/"],
-      a {
+      &__link,
+      &__link.active[href="/"] {
         color: $resp-menu-hover-color;
         background-color: $resp-menu-hover-background-color;
       }
@@ -397,8 +449,8 @@ hr {
   .pr-header__header-second {
     .rm-block__content {
       .menu {
-        a.active[href="/"],
-        a {
+      &__link,
+      &__link.active[href="/"] {
           //color: $resp-menu-hover-color;
           background-color: rgba(0, 0, 0, 0.05);
         }
@@ -420,7 +472,7 @@ hr {
 .ms-tiles {
   .rm-block__content {
     .menu-level-1 {
-      > li {
+      > .menu__item {
         background-color: $resp-menu-active-background-color;
       }
     }
@@ -431,13 +483,12 @@ hr {
 .ms-meganav {
   &.rm-is-open {
     .rm-block__content {
-      .menu-level-1 > li {
+      .menu-level-1 > .menu__item {
         border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
-        &:last-child {
-        }
+        &:last-child {}
 
-        > a {
+        > .menu__link {
           background-color: rgba(255, 255, 255, 0.3);
         }
       }
@@ -448,7 +499,7 @@ hr {
 
 /**
  * Breadcrumbs
- ========================================================================== */
+ ============================================================================ */
 
 .breadcrumb {
   li {
@@ -468,7 +519,7 @@ hr {
  * Pagers
  * - Full system pager.
  * - Views mini pager.
- ========================================================================== */
+ ============================================================================ */
 
 // Pager links are either an <a>, or a <span> for the current item in the Views mini-pager.
 .pager__link {
@@ -488,56 +539,48 @@ hr {
 // Active item link.
 .pager__link--is-active {
   background-color: rgba(255, 255, 255, 0.75);
-}
 
-
-
-/**
- * Tables
- * Base styles.
- ========================================================================== */
-
-table {
-  border-color: $border-color;
+  .pager--mini & {
+    background-color: transparent;
+    opacity: 0.65;
+  }
 }
 
 
 /**
  * Table Theme
  * Style Drupal selectors for tables.
- ========================================================================== */
+ ============================================================================ */
 
 // tr, takes extensive styles if enabled in variables.scss.
 tr {
-  border-color: $border-color;
-
   // Row striping (zebra).
   @if $table-row-striping == true {
     &.odd {
-      background: $table-row-odd-color;
+      background-color: $table-row-odd-color;
     }
 
     &.info,
     &.even,
     &:nth-child(2n+2)  {
-      background: $table-row-even-color;
+      background-color: $table-row-even-color;
     }
   }
 
   // Hover color.
   @if $tr-hover == true {
     &:hover {
-      background: $tr-hover-color;
+      background-color: $tr-hover-color;
     }
   }
 
   // Column striping, applies to the active column in sortable tables.
   @if $table-col-striping == true {
     &.odd td.active {
-      background: $table-col-odd-color;
+      background-color: $table-col-odd-color;
     }
     &.even td.active {
-      background: $table-col-even-color;
+      background-color: $table-col-even-color;
     }
   }
 }
@@ -572,7 +615,7 @@ th {
  * Note:
  *  - input type submit is treated as a 'button', see _buttons.scss
  *  - for drop buttons see _buttons.scss
- ========================================================================== */
+ ============================================================================ */
 
 // Select, Textarea and most input types
 // Select, Textarea and most input types
@@ -627,6 +670,7 @@ input[type="week"] {
  */
 details {
   border-color: $form-border-color;
+  background-color: $form-details-background-color;
 }
 
 
@@ -673,7 +717,7 @@ textarea.placeholder_text {
 
 /**
  * Form Theme
- ========================================================================== */
+ ============================================================================ */
 
 .form-type-radio,
 .form-type-checkbox {
@@ -707,7 +751,7 @@ textarea.placeholder_text {
 }
 
 
-.marker {
+form .marker {
   color: $form-marker-color;
 }
 
@@ -737,7 +781,7 @@ textarea.placeholder_text {
  *  - anchor links styled as buttons
  *  - drop buttons
  *  - action link buttons
- ========================================================================== */
+ ============================================================================ */
 
 button,
 .button {
@@ -792,7 +836,7 @@ button,
 
 // Preview buttons should be neutral.
 #edit-preview {
-  background-color: inherit;
+  background-color: $form-background-color;
   color: $button-border-color;
 }
 
@@ -881,7 +925,7 @@ button.link-edit-summary {
  * TODO: fix selectors when https://www.drupal.org/node/507488 lands. This will
  * mean the tabs are now a block, and we probably need some template revisions
  * also.
- ========================================================================== */
+ ============================================================================ */
 
 .tabs {}
 
@@ -972,7 +1016,7 @@ button.link-edit-summary {
  * File icons
  * AT unsets Drupal core file field CSS for image icons and replaces them
  * with FontAwesome icons.
- ========================================================================== */
+ ============================================================================ */
 
 .file {
   a:before {
@@ -982,12 +1026,21 @@ button.link-edit-summary {
 
 
 /**
- * Field Taxonomy Reference
- ========================================================================== */
+ * Image upload widget.
+ ============================================================================ */
 
-.field-type-taxonomy-term-reference {
+.image-preview {
+  background-color: transparent;
+}
+
+
+/**
+ * Field Taxonomy Reference
+ ============================================================================ */
+
+[class*="tags"].field-type-entity-reference {
   @if ($field-taxonomy-item-as-labels == true) {
-    span {
+    .field__item-wrapper {
       background: lighten($text-background-color, $lighten-more);
       color: $text-color;
       border-color: $border-color;
@@ -1014,7 +1067,7 @@ button.link-edit-summary {
  *  -  for example "new" mark on comments, tags etc.
  *
  *  TODO: fix this stuff up, its just a copy/paste from system.theme.css at the moment.
- ========================================================================== */
+ ============================================================================ */
 
 .filter-help a,
 .more-help-link a {
@@ -1029,7 +1082,7 @@ button.link-edit-summary {
  *  - System messages such as status, warning and error are NOT included
  *    here as we don't want them to shift or change in color module, since
  *    they are too important with regards to accessibility etc.
- ========================================================================== */
+ ============================================================================ */
 
 // Devel query messages
 .dev-query {
@@ -1066,7 +1119,7 @@ body {
  *    is usually a content type you create in the Drupal admin.
  *  - an instance of a content type (e.g. a single blog post) is called a node,
  *    the root template is called node.html.twg and the base selector is .node {}
- ========================================================================== */
+ ============================================================================ */
 
 .node {
   // $node-teaser-border-color
@@ -1100,7 +1153,7 @@ body {
 
 /**
  * Aggregator
- ========================================================================== */
+ ============================================================================ */
 
 .aggregator-item {
   background-color: $node-teaser-background-color;
@@ -1111,7 +1164,7 @@ body {
 /**
  * Forums
  *  - see table.scss for generic table styles.
- ========================================================================== */
+ ============================================================================ */
 
 .forum {
   .icon {
@@ -1124,13 +1177,47 @@ body {
 
 /**
  * Search results pages
- ========================================================================== */
+ ============================================================================ */
 
 .item-list--search-results {
   background-color: $node-teaser-background-color;
   box-shadow: $node-teaser-box-shadow;
 }
 
+
+
+/**
+ * Comments
+ *  - comment field (holds comment title, form, comments etc)
+ *  - styles for comments
+ ============================================================================ */
+
+// Comments are articles, they all have the base class of .comment:
+.comment {
+  border-color: $border-color-light;
+}
+
+
+/**
+ * Social media
+ *  - styles for socila media links, modules etc.
+ ============================================================================ */
+
+// Social Media Links
+// https://www.drupal.org/project/social_media_links
+
+.block-social-media-links,
+.pane-social-media-link-widget {
+  .platform__link {
+    color: $text-color;
+    opacity: 0.65;
+
+    &:hover,
+    &:focus {
+      opacity: 1;
+    }
+  }
+}
 
 
 

@@ -1,10 +1,10 @@
 /**
- * Base
- * - set element global styles, bascially whenever this element appears
- * it should look like this by default.
- ========================================================================== */
+ * Elements
+ * - set element global styles, basically whenever this element appears
+ *   it should look like this by default.
+ ============================================================================ */
 
-// Establish baseline
+// Establish (Compass) baseline.
 @include establish-baseline;
 
 
@@ -22,13 +22,31 @@ html {
 
 body {
   @include adjust-font-size-to($medium);
+  padding: 0;
+  margin: 0;
 }
 
 
-// By default AT uses border-box globally. All the layouts use it also, i.e. susy is configured
-// to use border-box as opposed to it's normal default of content-box.
+// Use border-box globally.
 * {
   box-sizing: border-box;
+}
+
+
+// Set display block for html elements.
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+main,
+menu,
+nav,
+section,
+summary {
+  display: block;
 }
 
 
@@ -84,7 +102,6 @@ h4 small, .h4 small {@include adjust-font-size-to($medium)}
 
 // Paragraph.
 p {
-
   // Attempt to hide empty paragraph elements.
   &:empty {
     display: none;
@@ -126,15 +143,20 @@ video {
 }
 
 
-// Bug in old webkit.
 svg {
+  // Mitigate a bug in old webkit.
   max-height: 100%;
+
+  // Make IE9 conform to spec.
+  &:not(:root) {
+    overflow: hidden;
+  }
 }
 
 
 // Global caption style.
 figcaption {
-  @include adjust-font-size-to($small);
+  @include adjust-font-size-to($medium * 0.75);
   @include output-rhythm(padding, $xx-small 0);
 }
 
@@ -145,20 +167,21 @@ a {
   cursor: pointer;
 
   &:active,
-  &:hover {
-  }
+  &:hover {}
 
   &:link,
-  &:visited {
-  }
+  &:visited {}
 
   &:active,
-  &.active {
-  }
+  &.active {}
 
   &:hover,
   &:focus {
     text-decoration: underline;
+  }
+
+  img {
+    border: 0;
   }
 }
 
@@ -167,7 +190,7 @@ a {
 ul,
 ol,
 dl {
-  @include output-rhythm(padding-#{$flow-from}, $xxxx-large); // LTR
+  @include output-rhythm(padding-#{$flow-from}, $xxxx-large);
   padding-#{$flow-to}: 0;
 }
 
@@ -180,7 +203,7 @@ dt {
 }
 
 dd {
-  @include output-rhythm(margin-left, $medium); // LTR
+  @include output-rhythm(margin-left, $medium);
 
   // RTL
   [dir="rtl"] & {
@@ -193,10 +216,10 @@ dd {
 // Blockquotes, Bootstrap style.
 blockquote {
   @include output-rhythm(padding, $medium);
-  @include output-rhythm(margin-#{$flow-from}, $xxxx-large); // LTR, match list indent.
+  @include output-rhythm(margin-#{$flow-from}, $xxxx-large);
 
   margin-#{$flow-to}: 0;
-  border-#{$flow-from}: 5px solid; // LTR
+  border-#{$flow-from}: 5px solid;
 
   p {
     @include adjust-font-size-to($large);
@@ -207,13 +230,22 @@ blockquote {
 
       &:before {
         font-family: $icon-font;
-        content: $blockquote-icon;  // LTR
-
-        display: inline-block;
-        padding: 0 5px 0 0;  // LTR
+        content: $blockquote-icon;
+        @include output-rhythm(padding, 0 5px 0 0);
         margin: 0;
-        text-align: $flow-from; // LTR
+        text-align: $flow-from;
         @include output-rhythm(width, $large);
+
+        // Wait for FontAwesome to load.
+        display: none;
+        .fa-loaded & {
+          display: inline-block;
+        }
+
+        // RTL
+        [dir="rtl"] & {
+          @include fa-icon-flip(-1, 1, 0);
+        }
       }
     }
 
@@ -265,13 +297,10 @@ hr {
 }
 
 
-/* Set hidden styles for non-supporting browers */
+// Set hidden styles for non-supporting browsers
 *[hidden] {
   display: none;
 }
 
 
-/* Webfont smoothing */
-:before {
-  @include font-smoothing();
-}
+

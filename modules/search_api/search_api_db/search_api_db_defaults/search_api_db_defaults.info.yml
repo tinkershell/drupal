@@ -13,8 +13,8 @@ dependencies:
   - drupal:user
   - drupal:views
 
-# Information added by Drupal.org packaging script on 2015-09-10
-version: '8.x-1.0-alpha9'
+# Information added by Drupal.org packaging script on 2015-12-02
+version: '8.x-1.0-alpha10'
 core: '8.x'
 project: 'search_api'
-datestamp: 1441882741
+datestamp: 1449072542

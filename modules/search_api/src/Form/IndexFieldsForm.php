@@ -8,7 +8,6 @@
 namespace Drupal\search_api\Form;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -153,11 +152,11 @@ class IndexFieldsForm extends EntityForm {
    */
   protected function buildFields(array $fields, array $additional) {
     $data_type_plugin_manager = $this->getDataTypePluginManager();
-    $types = $data_type_plugin_manager->getDataTypeOptions();
+    $types = $data_type_plugin_manager->getInstancesOptions();
 
     $fulltext_types = array('text');
-    // Add all custom data types with fallback "text" to fulltext types as well.
-    foreach ($data_type_plugin_manager->getCustomDataTypes() as $id => $type) {
+    // Add all data types with fallback "text" to fulltext types as well.
+    foreach ($data_type_plugin_manager->getInstances() as $id => $type) {
       if ($type->getFallbackType() == 'text') {
         $fulltext_types[] = $id;
       }
@@ -174,8 +173,8 @@ class IndexFieldsForm extends EntityForm {
     );
 
     foreach ($fields as $key => $field) {
-      $build['fields'][$key]['title']['#markup'] = SafeMarkup::checkPlain($field->getLabel());
-      $build['fields'][$key]['id']['#markup'] = SafeMarkup::checkPlain($key);
+      $build['fields'][$key]['title']['#plain_text'] = $field->getLabel();
+      $build['fields'][$key]['id']['#plain_text'] = $key;
       if ($field->getDescription()) {
         $build['fields'][$key]['description'] = array(
           '#type' => 'value',
@@ -185,6 +184,7 @@ class IndexFieldsForm extends EntityForm {
       $build['fields'][$key]['indexed'] = array(
         '#type' => 'checkbox',
         '#default_value' => $field->isIndexed(),
+        '#disabled' => $field->isIndexedLocked(),
       );
       $css_key = '#edit-fields-' . Html::getId($key);
       $build['fields'][$key]['type'] = array(
@@ -196,6 +196,7 @@ class IndexFieldsForm extends EntityForm {
             $css_key . '-indexed' => array('checked' => TRUE),
           ),
         ),
+        '#disabled' => $field->isTypeLocked(),
       );
       $build['fields'][$key]['boost'] = array(
         '#type' => 'select',
@@ -210,7 +211,6 @@ class IndexFieldsForm extends EntityForm {
       foreach ($fulltext_types as $type) {
         $build['fields'][$key]['boost']['#states']['visible'][$css_key . '-type'][] = array('value' => $type);
       }
-      $build['fields'][$key]['#disabled'] = $field->isLocked();
       $build['fields'][$key]['#access'] = !$field->isHidden();
     }
 

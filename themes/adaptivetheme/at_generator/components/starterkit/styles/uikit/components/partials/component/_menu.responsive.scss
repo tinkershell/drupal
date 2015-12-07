@@ -23,31 +23,9 @@
  *
  * Responsive styles are a combination of three things:
  *  1. Sass/CSS defined here (with breakpoints etc).
- *  2. jQuery: responsive-menus.js in AT Core libraries which adds/toggles classes.
- *  3. Theme settings as set in your themes Advanced extention settings.
- ========================================================================== */
-
-// Tiles
-@include tiles($context: 12, $tile_count: 2, $arrows: false);
-
-// Overlay menu
-@include overlay($toggle_position: (vert: bottom, horz: right), $arrows: false);
-
-// Dropmenu
-@include dropmenu($item-width: 12em, $arrows: true);
-
-// Off canvas
-@include offcanvas($oc-position: left, $width: 15em, $arrows: false);
-
-// FlipSlide
-@include meganav($col-width: 12em, $arrows: false);
-
-// Slidedown (classic hamburger menu)
-@include slidedown($arrows: false);
-
-// Horizontal (plain hoz menu)
-@include horizontal($arrows: false);
-
+ *  2. jQuery: at.responsiveMenus.js which adds/toggles classes etc.
+ *  3. Theme settings as set in your themes extention settings.
+ ============================================================================ */
 
 // Global styles for the navbar region.
 .rm-region {
@@ -78,25 +56,6 @@
 }
 
 
-// Menu <a> bottom whitespace.
-.ms-offcanvas,
-.ms-slidedown {
-  .rm-block__content .menu a {
-    @include output-rhythm(margin-bottom, 2px);
-  }
-}
-
-
-// Mitigate any unwanted space in specific regions.
-.pr-navbar__navbar,
-.pr-leaderboard__leaderboard {
-  .rm-block {
-    margin: 0;
-    padding: 0;
-  }
-}
-
-
 // Provide a consistant style for visible click handles.
 .rm-toggle  {
   @include adjust-font-size-to($medium);
@@ -104,11 +63,16 @@
   margin: 0;
   cursor: pointer;
 
-  span {
-  }
+  span {}
 
+  &:before,
   &:after {
-    //cursor: pointer;
+    display: none;
+
+    // Wait for FontAwesome to load.
+    .fa-loaded & {
+      display: inline-block;
+    }
   }
 }
 
@@ -120,27 +84,27 @@
   .menu {
     position: relative;
 
-    > .menu-item {
+    > .menu__item {
       z-index: 100;
     }
   }
 
-  .menu-item {
+  &__item {
     position: relative;
     vertical-align: middle;
     @include adjust-font-size-to($medium); // explicitly set the font-size since the container may be font-size 0
 
-    &.menu-item--active-trail > a {
+    &--active-trail > .menu__link {
     }
 
     // Strip border top from nested items.
-    &:first-child a {
+    &:first-child .menu__link {
       border-top: 0;
     }
   }
 
-  a {
-    transition: $transition_global;
+  .menu__link {
+    transition: $global-transition;
     margin: 0;
     border: 0;
 
@@ -158,112 +122,20 @@
       // Match Drupal base path for frontpage/home links
       &[href="/"] {
         &:hover,
-        &:focus {
-        }
+        &:focus {}
       }
     }
   }
 }
 
 
-// Customize responsive menus for this theme.
-.ms-dropmenu {
-  .rm-block__content {
-    a {
-      position: relative;
-      @include output-rhythm(padding, $xx-small $large);
-
-      &:after {
-        position: absolute;
-        @include output-rhythm(right, $medium); // LTR
-      }
-    }
-
-    .menu-item {
-      text-align: center;
-
-      &.menu-item--expanded li {
-        text-align: $flow-from; // LTR
-      }
-    }
+// Mitigate any unwanted space in specific regions.
+.pr-navbar__navbar,
+.pr-leaderboard__leaderboard {
+  .rm-block {
+    margin: 0;
+    padding: 0;
   }
 }
 
 
-.ms-horizontal {
-  .rm-block__content {
-    a {
-      @include output-rhythm(padding, $xx-small $large);
-
-      &:before,
-      &:after {
-        content: "";
-        float: none;
-        width: 0;
-        padding: 0;
-      }
-    }
-  }
-
-  // Header second specific styling.
-  .pr-header__header-second {
-    .menu {
-      float: #{$flow-to};
-    }
-  }
-}
-
-
-.ms-slidedown {
-  // Header second specific styling.
-  .pr-header__header-second {
-    .rm-toggle {
-      text-align: #{$flow-to};
-    }
-  }
-}
-
-
-
-
-
-.ms-offcanvas {
-  .rm-block__content {
-    display: none;
-    @include output-rhythm(padding, 0 0 $xx-small);
-  }
-
-  > .page,
-  .rm-block__content {
-    transition: $transition_global;
-  }
-}
-
-
-.ms-tiles {
-  .rm-block__content {
-    @include output-rhythm(padding, $xx-small 0);
-
-    .menu-level-1 {
-      > .menu-item {
-        @include output-rhythm(margin, $xx-small 0);
-      }
-    }
-  }
-}
-
-
-.ms-meganav {
-  &.rm-is-open {
-    .rm-block__content {
-      .menu-level-1 > .menu-item {
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        > a {}
-      }
-    }
-  }
-}

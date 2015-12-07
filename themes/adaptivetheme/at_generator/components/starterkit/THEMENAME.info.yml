@@ -35,16 +35,14 @@ features:
   - comment_user_verification
   - favicon
   - logo
+ckeditor_stylesheets:
+  - styles/css/components/base.css
+stylesheets-remove:
+  - @stable/css/node/node.preview.css
+libraries-extend:
+  quickedit/quickedit:
+    - MACHINENAME/quickedit
 libraries-override:
-  classy/base: false
-  classy/book-navigation: false
-  classy/file: false
-  classy/forum: false
-  classy/indented: false
-  classy/messages: false
-  classy/node: false
-  classy/progress: false
-  classy/search-results: false
   layout_plugin/ds_2col:
     css:
       theme:
@@ -85,13 +83,9 @@ libraries-override:
     css:
       theme:
         /modules/ds/css/ds-4col.css: styles/layout_plugin/css/ds/ds-4col.css
-stylesheets-remove:
-  - @classy/css/components/user.css
-  - @classy/css/components/dialog.css
-  - @classy/css/components/dropbutton.css
 
-# Information added by Drupal.org packaging script on 2015-10-22
+# Information added by Drupal.org packaging script on 2015-12-07
 version: '8.x-1.x-dev'
 core: '8.x'
 project: 'adaptivetheme'
-datestamp: 1445484254
+datestamp: 1449512281

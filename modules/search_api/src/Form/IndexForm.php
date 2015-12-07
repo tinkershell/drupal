@@ -7,8 +7,7 @@
 
 namespace Drupal\search_api\Form;
 
-use Drupal\Component\Utility\SafeMarkup;
-use Drupal\Core\Cache\Cache;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -16,6 +15,7 @@ use Drupal\search_api\Datasource\DatasourcePluginManager;
 use Drupal\search_api\IndexInterface;
 use Drupal\search_api\SearchApiException;
 use Drupal\search_api\Tracker\TrackerPluginManager;
+use Drupal\search_api\Utility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -141,7 +141,7 @@ class IndexForm extends EntityForm {
     /** @var \Drupal\search_api\ServerInterface $server */
     foreach ($this->getServerStorage()->loadMultiple() as $server_id => $server) {
       // @todo Special formatting for disabled servers.
-      $options[$server_id] = SafeMarkup::checkPlain($server->label());
+      $options[$server_id] = Html::escape($server->label());
     }
     return $options;
   }
@@ -399,7 +399,7 @@ class IndexForm extends EntityForm {
       if ($config_form = $tracker->buildConfigurationForm(array(), $form_state)) {
         $form['tracker_config']['#type'] = 'details';
         $form['tracker_config']['#title'] = $this->t('Configure %plugin', array('%plugin' => $tracker->label()));
-        $form['tracker_config']['#description'] = SafeMarkup::checkPlain($tracker->getDescription());
+        $form['tracker_config']['#description'] = Html::escape($tracker->getDescription());
         $form['tracker_config']['#open'] = $index->isNew();
 
         $form['tracker_config'] += $config_form;
@@ -554,11 +554,6 @@ class IndexForm extends EntityForm {
     $tracker_form_state = new SubFormState($form_state, array('tracker_config'));
     $tracker->submitConfigurationForm($form['tracker_config'], $tracker_form_state);
     $index->set('tracker_config', $tracker->getConfiguration());
-
-    // Invalidate caches, so this gets picked up by the views wizard.
-    Cache::invalidateTags(array('views_data'));
-    // Remove this line when https://www.drupal.org/node/2370365 gets fixed.
-    Cache::invalidateTags(array('extension:views'));
   }
 
   /**
@@ -571,9 +566,11 @@ class IndexForm extends EntityForm {
     // Only save the index if the form doesn't need to be rebuilt.
     if (!$form_state->isRebuilding()) {
       try {
-        $this->getEntity()->save();
+        /** @var \Drupal\search_api\IndexInterface $index */
+        $index = $this->getEntity();
+        $index->save();
         drupal_set_message($this->t('The index was successfully saved.'));
-        $form_state->setRedirect('entity.search_api_index.canonical', array('search_api_index' => $this->getEntity()->id()));
+        $form_state->setRedirect('entity.search_api_index.canonical', array('search_api_index' => $index->id()));
       }
       catch (SearchApiException $ex) {
         $form_state->setRebuild();

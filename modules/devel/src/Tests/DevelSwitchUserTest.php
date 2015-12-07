@@ -7,7 +7,7 @@
 
 namespace Drupal\devel\Tests;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\simpletest\WebTestBase;
 
 /**
@@ -188,6 +188,27 @@ class DevelSwitchUserTest extends WebTestBase {
     $this->assertSwitchUserListCount(2);
     $this->assertSwitchUserListContainsUser($this->develUser->getUsername());
     $this->assertSwitchUserListContainsUser($anonymous);
+
+    // Ensure that the switch user block works properly even if no prioritized
+    // users are found (special handling for user 1).
+    $this->drupalLogout();
+    $this->develUser->delete();
+
+    $this->drupalLogin($this->rootUser);
+    $this->drupalGet('');
+    $this->assertSwitchUserListCount(2);
+    $this->assertSwitchUserListContainsUser($this->rootUser->getUsername());
+    $this->assertSwitchUserListContainsUser($anonymous);
+
+    // Ensure that the switch user block works properly even if no roles have
+    // the 'switch users' permission associated (special handling for user 1).
+    $roles = user_roles(TRUE, 'switch users');
+    \Drupal::entityTypeManager()->getStorage('user_role')->delete($roles);
+
+    $this->drupalGet('');
+    $this->assertSwitchUserListCount(2);
+    $this->assertSwitchUserListContainsUser($this->rootUser->getUsername());
+    $this->assertSwitchUserListContainsUser($anonymous);
   }
 
   /**
@@ -209,7 +230,7 @@ class DevelSwitchUserTest extends WebTestBase {
    */
   public function assertSwitchUserListContainsUser($username) {
     $result = $this->xpath('//div[@id=:block]//ul/li/a[normalize-space()=:user]', [':block' => 'block-switch-user', ':user' => $username]);
-    $this->assert(count($result) > 0, SafeMarkup::format('User "%user" is included in the switch user list.', ['%user' => $username]));
+    $this->assert(count($result) > 0, new FormattableMarkup('User "%user" is included in the switch user list.', ['%user' => $username]));
   }
 
   /**
@@ -220,7 +241,7 @@ class DevelSwitchUserTest extends WebTestBase {
    */
   public function assertSwitchUserListNoContainsUser($username) {
     $result = $this->xpath('//div[@id=:block]//ul/li/a[normalize-space()=:user]', [':block' => 'block-switch-user', ':user' => $username]);
-    $this->assert(count($result) == 0, SafeMarkup::format('User "%user" is not included in the switch user list.', ['%user' => $username]));
+    $this->assert(count($result) == 0, new FormattableMarkup('User "%user" is not included in the switch user list.', ['%user' => $username]));
   }
 
   /**
@@ -265,7 +286,7 @@ class DevelSwitchUserTest extends WebTestBase {
     $result = $query->execute()->fetchAll();
 
     if (empty($result)) {
-      $this->fail(SafeMarkup::format('No session found for uid @uid', array('@uid' => $uid)));
+      $this->fail(new FormattableMarkup('No session found for uid @uid', array('@uid' => $uid)));
     }
     elseif (count($result) > 1) {
       // If there is more than one session, then that must be unexpected.

@@ -1,21 +1,17 @@
 <?php
 
-use Drupal\Core\Cache\Cache;
-use Drupal\Core\Config\Config;
+/**
+ * @file
+ * Custom theme settings.
+ */
 
 use Drupal\Component\Utility\Html;
-
-use Drupal\block\BlockInterface;
-use Drupal\block\Entity\Block;
-
 use Drupal\at_core\Theme\ThemeInfo;
-use Drupal\at_core\Theme\ThemeSettingsConfig;
 use Drupal\at_core\Layout\LayoutGenerator;
-use Drupal\at_core\Layout\Layout;
 use Drupal\at_core\File\DirectoryOperations;
 
 /**
- * Implimentation of hook_form_system_theme_settings_alter()
+ * Implementation of hook_form_system_theme_settings_alter()
  *
  * @param $form
  *   Nested array of form elements that comprise the form.
@@ -39,6 +35,7 @@ function at_core_form_system_theme_settings_alter(&$form, &$form_state) {
   // Common paths.
   $at_core_path  = drupal_get_path('theme', 'at_core');
   $subtheme_path = drupal_get_path('theme', $theme);
+  $generated_files_path = NULL;
 
   // Path to save generated CSS files. We don't want this happening for at_core or the generator.
   if (isset($getThemeInfo['subtheme type']) && $getThemeInfo['subtheme type'] === 'adaptive_subtheme') {
@@ -53,19 +50,22 @@ function at_core_form_system_theme_settings_alter(&$form, &$form_state) {
   // Active themes active blocks
   $theme_blocks = entity_load_multiple_by_properties('block', ['theme' => $theme]);
 
-  // Check for breakpoints module and set a warning and a flag to disable much of the theme settings if its not available
+  // Check for breakpoints module and set a warning and a flag to disable much
+  // of the theme settings if its not available.
   $breakpoints_module = \Drupal::moduleHandler()->moduleExists('breakpoint');
 
   if ($breakpoints_module == TRUE) {
     $breakpoint_groups = \Drupal::service('breakpoint.manager')->getGroups();
+    $breakpoints = array();
 
-    // Unset core breakpoint groups due to notices and other issues, until this is resolved:
-    // SEE: https://www.drupal.org/node/2379283
+    // Unset core breakpoint groups due to notices and other issues, until this
+    // is resolved: SEE: https://www.drupal.org/node/2379283
     unset($breakpoint_groups['toolbar']);
     unset($breakpoint_groups['seven']);
     unset($breakpoint_groups['bartik']);
 
-    // Set breakpoint options, we use these in layout and other extensions like Responsive menus.
+    // Set breakpoint options, we use these in layout and other extensions like
+    // Responsive menus.
     foreach ($breakpoint_groups as $group_key => $group_values) {
       $breakpoints[$group_key] = \Drupal::service('breakpoint.manager')->getBreakpointsByGroup($group_key);
     }
@@ -81,11 +81,10 @@ function at_core_form_system_theme_settings_alter(&$form, &$form_state) {
   }
 
   // Get node types (bundles).
-  $node_types = node_type_get_types();
+  $node_types = \Drupal\node\Entity\NodeType::loadMultiple();
 
-  // View or "Display modes", the search display mode is still problematic so we will exclude it for now,
-  // please see: https://drupal.org/node/1166114
-  //$node_view_modes = \Drupal::entityManager()->getViewModeOptions('node', TRUE);
+  // View or "Display modes".
+  // TODO entityManager() is deprecated, but how to replace?
   $node_view_modes = \Drupal::entityManager()->getViewModes('node');
 
   // Unset unwanted view modes
@@ -93,12 +92,12 @@ function at_core_form_system_theme_settings_alter(&$form, &$form_state) {
   unset($node_view_modes['search_index']);
   unset($node_view_modes['search_result']);
 
-  // Set a class on the form for the current admin theme, note if this is set to "Default theme"
-  // the result is always 0.
+  // Set a class on the form for the current admin theme, note if this is set to
+  // "Default theme" the result is always 0.
   $system_theme_config = \Drupal::config('system.theme');
   $admin_theme = $system_theme_config->get('admin');
   if (!empty($admin_theme)) {
-    $admin_theme_class = 'admin-theme--' . Html::getClass($admin_theme);
+    $admin_theme_class = 'admin-theme--' . Html::cleanCssIdentifier($admin_theme);
     $form['#attributes'] = array('class' => array($admin_theme_class));
   }
 
@@ -150,7 +149,7 @@ function at_core_form_system_theme_settings_alter(&$form, &$form_state) {
       $form['favicon']['#open'] = FALSE;
       $form['favicon']['#group'] = 'basic_settings';
 
-      // buttons don't work with #group, move it the hard way.
+      // Buttons don't work with #group, move it the hard way.
       $form['actions']['#type'] = $form['basic_settings']['actions']['#type'] = 'actions';
       $form['actions']['submit']['#type'] = $form['basic_settings']['actions']['submit']['#type'] = 'submit';
       $form['actions']['submit']['#value'] = $form['basic_settings']['actions']['submit']['#value'] = t('Save basic settings');
@@ -161,7 +160,7 @@ function at_core_form_system_theme_settings_alter(&$form, &$form_state) {
 
   // Modify the color scheme form.
   if (\Drupal::moduleHandler()->moduleExists('color')) {
-    //include_once($at_core_path . '/forms/color/color_submit.php');
+    include_once($at_core_path . '/forms/color/color_submit.php');
     if (isset($build_info['args'][0]) && ($theme = $build_info['args'][0]) && color_get_info($theme) && function_exists('gd_info')) {
       $form['#process'][] = 'at_core_make_collapsible';
     }
@@ -178,10 +177,23 @@ function at_core_make_collapsible($form) {
   $form['color']['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save color scheme'),
-    //'#submit'=> array('at_core_submit_color'),
     '#button_type' => 'primary',
     '#weight' => 100,
   );
+  $form['color']['actions']['log'] = array(
+    '#type' => 'submit',
+    '#value' => t('Log color scheme'),
+    '#submit'=> array('at_core_log_color_scheme'),
+    '#weight' => 101,
+    '#access' => FALSE,
+  );
+
+  // Magic user Obi Wan gets special Jedi powers.
+  // TODO getUsername() is deprecated, no idea how to replace it.
+  $user = \Drupal::currentUser();
+  if (in_array('administrator', $user->getRoles()) && $user->getUsername() == 'Obi Wan') {
+    $form['color']['actions']['log']['#access'] = TRUE;
+  }
 
   return $form;
 }

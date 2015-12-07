@@ -1,3 +1,10 @@
+at.settings:
+  version: "8.x-1.0"
+  drupalSettings:
+    # These placeholder values will be set by system_js_settings_alter().
+    ajaxPageState:
+      theme: null
+
 # Window size widget (AT Core)
 at.windowsize:
   version: "8.x-1.0"
@@ -9,7 +16,8 @@ at.windowsize:
     #scripts/at.windowSize.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/drupal
+    - core/drupalSettings
 
 # matchHeight
 at.matchheight:
@@ -24,16 +32,16 @@ at.matchheight:
     - core/jquery
 
 # enquire
-# Issued opened to add licence to project: https://github.com/WickyNilliams/enquire.js/issues/126
 at.enquire:
   version: "2.1.2"
   license:
     name: MIT
-    url: http://opensource.org/licenses/mit-license.php
+    url: https://raw.githubusercontent.com/WickyNilliams/enquire.js/master/LICENSE
     gpl-compatible: true
   js:
     scripts/min/enquire.min.js: { minified: true }
   dependencies:
+    - core/jquery
     - core/matchmedia
 
 # doubleTapToGo
@@ -57,17 +65,31 @@ at.fastclick:
     gpl-compatible: true
   js:
     scripts/min/fastclick.min.js: { minified: true }
+    #scripts/min/fastclick.js: {}
   dependencies:
     - core/jquery
 
 # Fastclick initialize
 at.fastclick_initialize:
-  version: "1.0.3"
+  version: "8.x-1.0"
   js:
     scripts/min/at.fastclickInitialize.min.js: { minified: true }
+    #scripts/min/at.fastclickInitialize.js: {}
   dependencies:
     - at_core/at.fastclick
     - core/jquery
+
+# Fontfaceobserver
+# https://github.com/bramstein/fontfaceobserver
+at.fontfaceobserver:
+  version: "1.5.4"
+  license:
+    name: BSD
+    url: https://raw.githubusercontent.com/bramstein/fontfaceobserver/master/LICENSE
+    gpl-compatible: true
+  js:
+    scripts/min/fontfaceobserver.min.js: { minified: true }
+    #scripts/fontfaceobserver.js: {}
 
 # Breakpoints
 at.breakpoints:
@@ -95,13 +117,40 @@ at.responsivemenus:
     - core/drupalSettings
     - core/matchmedia
     - at_core/at.enquire
+    - core/modernizr
+
+# Responsive Tables
+at.responsivetables:
+  version: "8.x-1.0"
+  js:
+    scripts/min/at.responsiveTables.min.js: { minified: true }
+    #scripts/at.responsiveTables.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+
+# Responsive Lists
+at.responsivelists:
+  version: "8.x-1.0"
+  js:
+    scripts/min/at.responsiveLists.min.js: { minified: true }
+    #scripts/at.responsiveLists.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/matchmedia
+    - core/jquery.once
+    - core/drupal.debounce
+    - core/modernizr
 
 # Slidedshow
+# https://github.com/woothemes/FlexSlider
 at.slideshow:
   version: "2.3.0"
   licence:
     name: GNU-GPL-2.0
-    url: https://github.com/woothemes/FlexSlider/blob/master/LICENSE.md
+    url: https://raw.githubusercontent.com/woothemes/FlexSlider/master/LICENSE.md
     gpl-compatible: true
   js:
     scripts/min/jquery.flexslider.min.js: { minified: true }
@@ -113,38 +162,22 @@ at.slideshow:
     - core/drupal
     - core/drupalSettings
 
-# Mobile blocks
-# at.mobile_blocks:
-#   version: "8.x-1.0"
-#   js:
-#     #scripts/min/at.mobileBlocks.min.js: { minified: true }
-#     scripts/at.mobileBlocks.js: {}
-#   dependencies:
-#     - core/jquery
-#     - core/drupal
-#     - core/drupalSettings
-
-# Captionjs
-at.capitons:
-  version: "0.9.8"
-  licence:
-    name: MIT
-    url: https://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt
-    gpl-compatible: true
+# Typekit loader
+at.typekit:
+  version: "8.x-1.0"
+  header: true
+  weight: 1000
   js:
-    scripts/min/jquery.caption.min.js: { minified: true }
-    #scripts/jquery.caption.js: {}
-  dependencies:
-    - core/jquery
-    - core/drupal
-    - core/drupalSettings
+    scripts/min/at.typekit.min.js: { minified: true }
+    #scripts/at.typekit.js: {}
 
 # Video - responsive YouTube and Vimeo iframes. This is pretty rough
 # and only works OK, the CSS method in the UIKit is better.
 at.responsivevideo:
   version: "8.x-1.0"
   js:
-    scripts/at.responsiveVideo.js: {}
+    scripts/at.responsiveVideo.min.js: {}
+    #scripts/at.responsiveVideo.js: {}
   dependencies:
     - core/jquery
     - core/drupal

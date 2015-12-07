@@ -1,9 +1,9 @@
 /**
  * Color
- ========================================================================== */
+ ============================================================================ */
 /**
  * base.elements
- ========================================================================== */
+ ============================================================================ */
 html,
 body {
   background-color: #333333;
@@ -60,7 +60,7 @@ hr {
  * Page
  *  - mainly for markup that is printed directly in page.html.twig and
  *    .l-r {}
- ========================================================================== */
+ ============================================================================ */
 .page {
   background-color: #f7f7f7;
 }
@@ -85,7 +85,7 @@ hr {
   background: inherit;
 }
 .pr-navbar a,
-.pr-navbar .menu a {
+.pr-navbar .menu__link {
   color: inherit;
 }
 
@@ -113,16 +113,21 @@ hr {
   background: inherit;
 }
 .pr-footer a,
-.pr-footer .menu a {
+.pr-footer .menu__link {
   color: inherit;
 }
 .pr-footer a.active, .pr-footer a:hover, .pr-footer a:focus,
-.pr-footer .menu a.active,
-.pr-footer .menu a:hover,
-.pr-footer .menu a:focus {
+.pr-footer .menu__link.active,
+.pr-footer .menu__link:hover,
+.pr-footer .menu__link:focus {
   color: inherit;
 }
 
+/**
+ * AT attribution message
+ *  - a toggle setting in the theme settings, you can turn it on/off using
+ *    the Markup overrides extension.
+ ============================================================================ */
 .attribution .l-rw {
   background-color: transparent;
 }
@@ -130,6 +135,10 @@ hr {
   color: #363636;
 }
 
+/**
+ * Feed Icons
+ *  - icons are SVG, SEE feed-icon.html.twig in AT Core templates directory.
+ ============================================================================ */
 .feed-icon-rss__path {
   fill: rgba(0, 0, 0, 0.6);
 }
@@ -137,31 +146,29 @@ hr {
 /**
  * Branding styles
  *  - Drupal core branding block.
- ========================================================================== */
+ ============================================================================ */
 /**
  * Blocks
- ========================================================================== */
+ ============================================================================ */
 /**
  * Menus
  *  - style Drupal core block menus.
  *  - for the drop menu and other responsive menus see the mixins and the
  *    _navbar.scss partial.
- ========================================================================== */
-.menu-item--collapsed > a:after, .menu-item--expanded > a:after {
-  color: #363636;
+ ============================================================================ */
+.menu__item:first-child .menu__link {
+  border-color: #cccccc;
 }
-.menu-item a {
+
+.menu__link {
   color: #0066cc;
   border-color: #cccccc;
 }
-.menu-item a:hover, .menu-item a:focus {
+.menu__link:hover, .menu__link:focus {
   color: #0066cc;
 }
-.menu-item a.active {
+.menu__link.active {
   color: #0066cc;
-}
-.menu-item:first-child a {
-  border-color: #cccccc;
 }
 
 /**
@@ -191,7 +198,7 @@ hr {
  *  1. Sass/CSS defined here (with breakpoints etc).
  *  2. jQuery: responsive-menus.js in AT Core libraries which adds/toggles classes.
  *  3. Theme settings as set in your themes Advanced extention settings.
- ========================================================================== */
+ ============================================================================ */
 .rm-region,
 .rm-block,
 .rm-block * {
@@ -203,44 +210,42 @@ hr {
   background: transparent;
 }
 
-.rm-block__content .menu li.active-trail > a {
+.rm-block__content .menu__item--active-trail > a {
   color: inherit;
   background: rgba(255, 255, 255, 0.3);
 }
-.rm-block__content .menu a {
+.rm-block__content .menu__link {
   color: inherit;
   background: inherit;
 }
-.rm-block__content .menu a:after, .rm-block__content .menu a:before {
+.rm-block__content .menu__link:after, .rm-block__content .menu__link:before {
   color: inherit !important;
 }
-.rm-block__content .menu a:active {
+.rm-block__content .menu__link:active {
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
   opacity: 0.9;
 }
-.rm-block__content .menu a:hover, .rm-block__content .menu a:focus {
+.rm-block__content .menu__link:hover, .rm-block__content .menu__link:focus {
   color: inherit;
   background-color: rgba(255, 255, 255, 0.3);
 }
-.rm-block__content .menu a.active {
+.rm-block__content .menu__link.active {
   color: inherit;
   background-color: rgba(255, 255, 255, 0.3);
 }
-.rm-block__content .menu a.active[href="/"] {
+.rm-block__content .menu__link.active[href="/"] {
   background-color: transparent;
 }
-.rm-block__content .menu a.active[href="/"]:hover, .rm-block__content .menu a.active[href="/"]:focus {
+.rm-block__content .menu__link.active[href="/"]:hover, .rm-block__content .menu__link.active[href="/"]:focus {
   color: inherit;
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-.ms-slidedown .rm-block__content .menu a.active[href="/"],
-.ms-slidedown .rm-block__content .menu a {
+.ms-slidedown .rm-block__content .menu__link, .ms-slidedown .rm-block__content .menu__link.active[href="/"] {
   color: inherit;
   background-color: rgba(255, 255, 255, 0.3);
 }
-.ms-slidedown .pr-header__header-second .rm-block__content .menu a.active[href="/"],
-.ms-slidedown .pr-header__header-second .rm-block__content .menu a {
+.ms-slidedown .pr-header__header-second .rm-block__content .menu__link, .ms-slidedown .pr-header__header-second .rm-block__content .menu__link.active[href="/"] {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -250,20 +255,20 @@ hr {
   color: #f7f7f7;
 }
 
-.ms-tiles .rm-block__content .menu-level-1 > li {
+.ms-tiles .rm-block__content .menu-level-1 > .menu__item {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-.ms-meganav.rm-is-open .rm-block__content .menu-level-1 > li {
+.ms-meganav.rm-is-open .rm-block__content .menu-level-1 > .menu__item {
   border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
-.ms-meganav.rm-is-open .rm-block__content .menu-level-1 > li > a {
+.ms-meganav.rm-is-open .rm-block__content .menu-level-1 > .menu__item > .menu__link {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
 /**
  * Breadcrumbs
- ========================================================================== */
+ ============================================================================ */
 .breadcrumb li:before {
   color: #cccccc;
 }
@@ -276,7 +281,7 @@ hr {
  * Pagers
  * - Full system pager.
  * - Views mini pager.
- ========================================================================== */
+ ============================================================================ */
 .pager__link {
   border-color: #cccccc;
 }
@@ -291,23 +296,15 @@ hr {
 .pager__link--is-active {
   background-color: rgba(255, 255, 255, 0.75);
 }
-
-/**
- * Tables
- * Base styles.
- ========================================================================== */
-table {
-  border-color: #cccccc;
+.pager--mini .pager__link--is-active {
+  background-color: transparent;
+  opacity: 0.65;
 }
 
 /**
  * Table Theme
  * Style Drupal selectors for tables.
- ========================================================================== */
-tr {
-  border-color: #cccccc;
-}
-
+ ============================================================================ */
 thead tr {
   color: #363636;
   background-color: #ededed;
@@ -327,7 +324,7 @@ th {
  * Note:
  *  - input type submit is treated as a 'button', see _buttons.scss
  *  - for drop buttons see _buttons.scss
- ========================================================================== */
+ ============================================================================ */
 textarea,
 select,
 input[type="date"],
@@ -436,6 +433,7 @@ input[type="week"][disabled]:focus {
  */
 details {
   border-color: #cccccc;
+  background-color: #fcfcfc;
 }
 
 input[readonly],
@@ -473,7 +471,7 @@ textarea.placeholder_text {
 
 /**
  * Form Theme
- ========================================================================== */
+ ============================================================================ */
 .form-type-radio label.option,
 .form-type-checkbox label.option {
   border-color: #cccccc;
@@ -497,7 +495,7 @@ textarea.placeholder_text {
   color: #505050;
 }
 
-.marker {
+form .marker {
   color: #ee0000;
 }
 
@@ -521,7 +519,7 @@ textarea.placeholder_text {
  *  - anchor links styled as buttons
  *  - drop buttons
  *  - action link buttons
- ========================================================================== */
+ ============================================================================ */
 button,
 .button {
   color: #ffffff;
@@ -588,7 +586,7 @@ button[disabled]:hover,
 }
 
 #edit-preview {
-  background-color: inherit;
+  background-color: #ffffff;
   color: #0066cc;
 }
 
@@ -657,7 +655,7 @@ button.link-edit-summary:hover, button.link-edit-summary:focus {
  * TODO: fix selectors when https://www.drupal.org/node/507488 lands. This will
  * mean the tabs are now a block, and we probably need some template revisions
  * also.
- ========================================================================== */
+ ============================================================================ */
 .pr-temporary-tabs ul.tabs--primary {
   border-bottom-color: #cccccc;
 }
@@ -725,20 +723,27 @@ button.link-edit-summary:hover, button.link-edit-summary:focus {
  * File icons
  * AT unsets Drupal core file field CSS for image icons and replaces them
  * with FontAwesome icons.
- ========================================================================== */
+ ============================================================================ */
 .file a:before {
   color: #363636;
 }
 
 /**
+ * Image upload widget.
+ ============================================================================ */
+.image-preview {
+  background-color: transparent;
+}
+
+/**
  * Field Taxonomy Reference
- ========================================================================== */
+ ============================================================================ */
 /**
  * Labels.
  *  -  for example "new" mark on comments, tags etc.
  *
  *  TODO: fix this stuff up, its just a copy/paste from system.theme.css at the moment.
- ========================================================================== */
+ ============================================================================ */
 .filter-help a:after,
 .more-help-link a:after {
   color: #cccccc;
@@ -749,7 +754,7 @@ button.link-edit-summary:hover, button.link-edit-summary:focus {
  *  - System messages such as status, warning and error are NOT included
  *    here as we don't want them to shift or change in color module, since
  *    they are too important with regards to accessibility etc.
- ========================================================================== */
+ ============================================================================ */
 .dev-query {
   color: #f7f7f7;
 }
@@ -774,7 +779,7 @@ body:before {
  *    is usually a content type you create in the Drupal admin.
  *  - an instance of a content type (e.g. a single blog post) is called a node,
  *    the root template is called node.html.twg and the base selector is .node {}
- ========================================================================== */
+ ============================================================================ */
 .node {
   background-color: #ffffff;
   box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.1);
@@ -787,7 +792,7 @@ body:before {
 
 /**
  * Aggregator
- ========================================================================== */
+ ============================================================================ */
 .aggregator-item {
   background-color: #ffffff;
   box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.1);
@@ -796,16 +801,41 @@ body:before {
 /**
  * Forums
  *  - see table.scss for generic table styles.
- ========================================================================== */
+ ============================================================================ */
 .forum .icon svg {
   fill: rgba(0, 0, 0, 0.5);
 }
 
 /**
  * Search results pages
- ========================================================================== */
+ ============================================================================ */
 .item-list--search-results {
   background-color: #ffffff;
   box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.1);
 }
+
+/**
+ * Comments
+ *  - comment field (holds comment title, form, comments etc)
+ *  - styles for comments
+ ============================================================================ */
+.comment {
+  border-color: #eeeeee;
+}
+
+/**
+ * Social media
+ *  - styles for socila media links, modules etc.
+ ============================================================================ */
+.block-social-media-links .platform__link,
+.pane-social-media-link-widget .platform__link {
+  color: #363636;
+  opacity: 0.65;
+}
+.block-social-media-links .platform__link:hover, .block-social-media-links .platform__link:focus,
+.pane-social-media-link-widget .platform__link:hover,
+.pane-social-media-link-widget .platform__link:focus {
+  opacity: 1;
+}
+
 /*# sourceMappingURL=color.css.map */

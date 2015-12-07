@@ -1,13 +1,11 @@
 <?php
 
-use Drupal\Component\Utility\Xss;
-use Drupal\Component\Utility\Html;
-
 /**
  * @file
  * Generate settings for the Slideshows form.
- * Uses the fantastic slider from http://bxslider.com.
  */
+
+use Drupal\Component\Utility\Html;
 
 $form['slideshows'] = array(
   '#type' => 'details',
@@ -37,25 +35,25 @@ $slideshow_count = theme_get_setting('settings.slideshow_count');
 if (isset($slideshow_count) && $slideshow_count >= 1) {
   for ($i = 0; $i < $slideshow_count; $i++) {
 
-    $slideshow_class = Html::getClass($theme . '-slideshow-' . $i);
+    $slideshow_class = Html::cleanCssIdentifier($theme . '-slideshow-' . $i);
 
     $form['slideshows']['slideshow_' . $i]['slideshow_options'] = array(
       '#type' => 'details',
-      '#title' => t('Options: !slidername', array('!slidername' => $slideshow_class)),
+      '#title' => t('Options: @slidername', array('@slidername' => $slideshow_class)),
     );
 
     // Enable/disable toggle.
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['settings_slideshow_' . $i . '_enable'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Use custom settings for this slideshow'),
+      '#title' => t('Enable this slideshow'),
       '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_enable'),
-      //'#description' => t('Check this option to customize settings for this slideshow.'),
+      '#description' => t('Only enable slideshows you are using.'),
     );
 
     // Fieldset to globally disabled or enable form elements
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Settings for !slidername', array('!slidername' => $slideshow_class)),
+      '#title' => t('Settings for @slidername', array('@slidername' => $slideshow_class)),
       '#states' => array(
         'visible' => array('input[name="settings_slideshow_' . $i . '_enable"]' => array('checked' => TRUE)),
       ),
@@ -110,7 +108,7 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
         'max' => 10000,
         'step' => 100,
       ),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_slideshowspeed') ?: 4000,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_slideshowspeed') ? theme_get_setting('settings.slideshow_' . $i . '_slideshowspeed') : 4000,
       '#description' => t('Set the speed of the slideshow cycling, in milliseconds.'),
     );
 
@@ -123,16 +121,15 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
         'max' => 5000,
         'step' => 50,
       ),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_animationspeed') ?: 600,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_animationspeed') ? theme_get_setting('settings.slideshow_' . $i . '_animationspeed') : 600,
       '#description' => t('Set the speed of animations, in milliseconds.'),
     );
-
 
     // controlNav : Boolean Create navigation for paging control of each slide.
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['settings_slideshow_' . $i . '_controlnav'] = array(
       '#type' => 'checkbox',
       '#title' => t('Pager <small>(Show the pager)</small>'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_controlnav'),
+      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_controlnav') ? theme_get_setting('settings.slideshow_' . $i . '_controlnav') : 1,
     );
 
     // Thumbnail controlNav toggle.
@@ -152,7 +149,7 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['settings_slideshow_' . $i . '_directionnav'] = array(
       '#type' => 'checkbox',
       '#title' => t('Controls <small>(Show previous/next links)</small>'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_directionnav'),
+      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_directionnav') ? theme_get_setting('settings.slideshow_' . $i . '_directionnav') : 1,
     );
 
     /* Carousels */
@@ -189,10 +186,9 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
         'max' => 1000,
         'step' => 1,
       ),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_itemwidth') ?: 300,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_itemwidth') ? theme_get_setting('settings.slideshow_' . $i . '_itemwidth') : 300,
       '#description' => t('Set the width of individual carousel items.'),
     );
-
 
     // itemMargin : Number Margin between carousel items.
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['carousels']['settings_slideshow_' . $i . '_itemmargin'] = array(
@@ -203,7 +199,7 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
         'max' => 100,
         'step' => 1,
       ),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_itemmargin') ?: 0,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_itemmargin') ? theme_get_setting('settings.slideshow_' . $i . '_itemmargin') : 0,
       '#description' => t('Set the margin between carousel items.'),
     );
 
@@ -216,7 +212,7 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
         'max' => 12,
         'step' => 1,
       ),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_minitems') ?: 2,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_minitems') ? theme_get_setting('settings.slideshow_' . $i . '_minitems') : 2,
       '#description' => t('Set the minimum number of carousel items that should be visible.'),
     );
 
@@ -229,7 +225,7 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
         'max' => 24,
         'step' => 1,
       ),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_maxitems') ?: 4,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_maxitems') ? theme_get_setting('settings.slideshow_' . $i . '_maxitems') : 4,
       '#description' => t('Set the maximum number of carousel items that should be visible.'),
     );
 
@@ -242,32 +238,21 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
         'max' => 12,
         'step' => 1,
       ),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_move') ?: 1,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_move') ? theme_get_setting('settings.slideshow_' . $i . '_move') : 1,
       '#description' => t('Set the number of carousel items that should move on animation.'),
     );
 
-
     /* ADVANCED */
-    $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['settings_slideshow_' . $i . '_advanced_options'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Advanced options <small>(show and configure advanced options)</small>'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_advanced_options'),
-    );
-
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options'] = array(
       '#type' => 'details',
       '#title' => t('Advanced Options'),
-      '#open'=> TRUE,
-      '#states' => array(
-        'visible' => array('input[name="settings_slideshow_' . $i . '_advanced_options"]' => array('checked' => TRUE)),
-      ),
+      '#open'=> FALSE,
     );
 
-    // pauseOnAction : Boolean Pause the slideshow when interacting with control elements.
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options']['settings_slideshow_' . $i . '_pauseonaction'] = array(
       '#type' => 'checkbox',
       '#title' => t('Pause on action'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_pauseonaction') ?: 1,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_pauseonaction') ? theme_get_setting('settings.slideshow_' . $i . '_pauseonaction') : 1,
       '#description' => t('Pause the slideshow when interacting with control elements.'),
     );
 
@@ -283,7 +268,7 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options']['settings_slideshow_' . $i . '_animationloop'] = array(
       '#type' => 'checkbox',
       '#title' => t('Animation loop'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_animationloop') ?: 1,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_animationloop') ? theme_get_setting('settings.slideshow_' . $i . '_animationloop') : 1,
       '#description' => t('Gives the slider a seamless infinite loop.'),
     );
 
@@ -308,7 +293,7 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options']['settings_slideshow_' . $i . '_autostart'] = array(
       '#type' => 'checkbox',
       '#title' => t('Auto start'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_autostart') ?: 1,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_autostart') ? theme_get_setting('settings.slideshow_' . $i . '_autostart') : 1,
       '#description' => t('Start the slideshow automatically.'),
     );
 
@@ -322,7 +307,7 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
         'step' => 50,
       ),
       '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_initdelay'),
-      '#description' => t('Set an initialization delay, in milliseconds.'),
+      '#description' => t('Set an initialization delay, in milliseconds, e.g. 100.'),
     );
 
     // easing           : "swing",        // String Determines the easing method used in jQuery transitions.
@@ -340,15 +325,15 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options']['settings_slideshow_' . $i . '_usecss'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use CSS'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_usecss') ?: 1,
-      '#description' => t('Slider will use CSS3 transitions, if available.'),
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_usecss') ? theme_get_setting('settings.slideshow_' . $i . '_usecss') : 1,
+      '#description' => t('Slider will use CSS3 transitions if the browser supports them. Uncheck this if you have issues with slides flashing or flickering, or if you prefer to use JavaScript animation.'),
     );
 
     // touch            : true,           // Boolean Allow touch swipe navigation of the slider on enabled devices
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options']['settings_slideshow_' . $i . '_touch'] = array(
       '#type' => 'checkbox',
       '#title' => t('Touch swipe navigation'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_touch') ?: 1,
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_touch') ? theme_get_setting('settings.slideshow_' . $i . '_touch') : 1,
       '#description' => t('Allow touch swipe navigation of the slider on enabled devices.'),
     );
 
@@ -364,7 +349,7 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options']['settings_slideshow_' . $i . '_prevtext'] = array(
       '#type' => 'textfield',
       '#title' => t('Previous text'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_prevtext')?: t('Previous'),
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_prevtext') ? theme_get_setting('settings.slideshow_' . $i . '_prevtext') : t('Previous'),
       '#description' => t('Text for the "previous" direction nav item.'),
     );
 
@@ -372,60 +357,58 @@ if (isset($slideshow_count) && $slideshow_count >= 1) {
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options']['settings_slideshow_' . $i . '_nexttext'] = array(
       '#type' => 'textfield',
       '#title' => t('Next text'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_nexttext') ?: t('Next'),
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_nexttext') ? theme_get_setting('settings.slideshow_' . $i . '_nexttext') : t('Next'),
       '#description' => t('Text for the "next" direction nav item.'),
     );
 
-    // selector         : ".slides > li", // Selector Must match a simple pattern. '{container} > {slide}'.
+    // slideshow selector         : themename-slideshow-N i.e. $slideshow_class
+    $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options']['settings_slideshow_' . $i . '_slideshow_class'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Slideshow selector'),
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_slideshow_class') ? theme_get_setting('settings.slideshow_' . $i . '_slideshow_class') : '.' . $slideshow_class,
+      '#description' => t('Change this if you are using your own markup, e.g. a custom block with image fields.'),
+    );
+
+    // slide selector         : ".slides > li", // Selector Must match a simple pattern. '{container} > {slide}'.
     $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['advanced_options']['settings_slideshow_' . $i . '_selector'] = array(
       '#type' => 'textfield',
       '#title' => t('Slide selector'),
-      '#default_value' => theme_get_setting('settings.slideshow_' . $i . '_selector')?: '.slides > li',
+      '#default_value' => null !== theme_get_setting('settings.slideshow_' . $i . '_selector') ? theme_get_setting('settings.slideshow_' . $i . '_selector') : '.slides > li',
       '#description' => t('Selector must match the pattern <code>{container} &#62; {slide}</code>. Modify with caution. The generated markup snippet will not reflect changes here, and you will need to account for changes both in markup and CSS. Changing this without editing the markup in your slideshow or CSS will break the slideshow.'),
     );
 
+    if (theme_get_setting('settings.slideshow_' . $i . '_slideshow_class') !== null) {
+      $slideshow_class_setting = theme_get_setting('settings.slideshow_' . $i . '_slideshow_class');
+      $this_slideshow_class = Html::cleanCssIdentifier($slideshow_class_setting);
+    } else {
+      $this_slideshow_class = $slideshow_class;
+    }
+
     // Class and markup generator TODO: markup generator
-    $form['slideshows']['slideshow_' . $i]['slideshow_options']['slideshow_markup'] = array(
+    $form['slideshows']['slideshow_' . $i]['slideshow_options']['wrapper']['slideshow_markup'] = array(
       '#type' => 'textarea',
-      '#title' => t('Generated markup for this slideshow'),
+      '#title' => t('Generated markup for this slideshow (with working examples)'),
       '#default_value' =>
-'<div class="flexslider ' . $slideshow_class . '">
+'<div class="flexslider loading ' . ltrim($this_slideshow_class, '.') . '">
   <ul class="slides">
-    <li></li>
-    <li></li>
-    <li></li>
+    <li>
+      <img src="' . base_path() . $subtheme_path  . '/images/slides/test-slide-1.png" alt="Test slide one" />
+      <p class="flex-caption">Test slide one</p>
+    </li>
+    <li>
+      <img src="' . base_path() . $subtheme_path  . '/images/slides/test-slide-2.png" alt="Test slide two" />
+      <p class="flex-caption">Test slide two</p>
+    </li>
+    <li>
+      <img src="' . base_path() . $subtheme_path  . '/images/slides/test-slide-3.png" alt="Test slide three" />
+      <p class="flex-caption">Test slide three</p>
+    </li>
   </ul>
 </div>',
       '#disabled' => TRUE,
       '#cols' => 30,
-      '#rows' => 7,
-      '#description' => t('Markup for this slideshow with initilialization class <code>!initilialization_class</code>. Use this in blocks, nodes, templates etc (anywhere in the output between the <code>&#60;body&#62;</code> elements). Each image or content must be in an <code>@licode</code>, add or remove as required. Note: this code and initialization class are re-usable, for example you want a slideshow for each section of your site and want to use the same settings - just re-use this snippet for each slideshow.', array('@licode' => '<li></li>', '!initilialization_class' => $slideshow_class)),
+      '#rows' => 16,
+      '#description' => t('Markup for this slideshow with initialization class <code>@initialization_class</code>. Use this in blocks, nodes, templates etc (anywhere in the output between the <code>&#60;body&#62;</code> elements). Each image or content must be in an <code>@licode</code>, add or remove as required. Note: this code and initialization class are re-usable, for example you want a slideshow for each section of your site and want to use the same settings - just re-use this snippet for each slideshow.', array('@licode' => '<li></li>', '@initialization_class' => $slideshow_class)),
     );
   }
 }
-
-
-/*
-$form['slideshows']['settings_slideshows'] = array(
-  '#type' => 'textarea',
-  '#title' => t('Slideshow settings'),
-  '#rows' => 20,
-  '#default_value' => theme_get_setting('settings.slideshows') ? Xss::filterAdmin(theme_get_setting('settings.slideshows')) : '',
-  '#description' => t("<p>Settings will save to the file: <code>!slideshowsettingspath</code></p>", array('!slideshowsettingspath' => $subtheme_path . '/scripts/slideshow-settings.js')),
-);
-*/
-/*
-$form['slideshows']['slideshows_help'] = array(
-  '#type' => 'container',
-  '#markup' => t('
-  <h3>How to create a new Slideshow</h3>
-  <ol>
-  <li>Create a new <a href="!customblockpath" target="_blank">custom block</a>.</li>
-  <li>Add images using the WYSIWYG editor or manually if you are loading images via FTP.</li>
-  <li>Format images into a UL list, it must have the class name on the UL wrapper the same as specified in the above settings, e.g. <code>class="at-slider-0"</code>. Title attributes on image elements are converted into captions. You can wrap images in a link.</li>
-  </ol>
-
-  <p>For more extensive help (details on the various options and how to do videos, a carosel etc) and a video presentation please see the extended help page: TODO.</p>
-  ', array('!customblockpath' => '/admin/structure/block')),
-);
-*/

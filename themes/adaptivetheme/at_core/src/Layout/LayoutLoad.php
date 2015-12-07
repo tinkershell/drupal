@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\at_core\Layout\LayoutLoad.
+ * Contains \Drupal\at_core\Layout\LayoutLoad
  */
 
 namespace Drupal\at_core\Layout;
@@ -10,10 +10,6 @@ namespace Drupal\at_core\Layout;
 use Drupal\Core\Template\Attribute;
 use Drupal\Component\Utility\Tags;
 use Drupal\Component\Utility\Html;
-
-use Drupal\at_core\Layout\Layout;
-use Drupal\at_core\Layout\LayoutCompatible;
-
 
 class LayoutLoad extends Layout implements LayoutLoadInterface {
 
@@ -23,28 +19,31 @@ class LayoutLoad extends Layout implements LayoutLoadInterface {
   // The active regions on page load.
   protected $active_regions;
 
-
-  // Constructor
+  /**
+   * LayoutInterface constructor.
+   * @param $theme_name
+   * @param $active_regions
+   */
   public function __construct($theme_name, $active_regions) {
-
     $this->theme_name = $theme_name;
     $this->active_regions = $active_regions;
-
     $layout_data = new LayoutCompatible($this->theme_name);
     $layout_compatible_data = $layout_data->getCompatibleLayout();
-
     $this->layout_config = $layout_compatible_data['layout_config'];
   }
 
-  // Return the pages active regions
+  /**
+   * {@inheritdoc}
+   */
   public function activeRegions() {
     return $this->active_regions;
   }
 
-  // Returns the row name for a region.
+  /**
+   * {@inheritdoc}
+   */
   public function regionAttributes($region) {
     $region_row = '';
-    $config_settings = \Drupal::config($this->theme_name . '.settings')->get('settings');
 
     // If rows are empty return early.
     if (empty($this->layout_config['rows'])) {
@@ -63,8 +62,9 @@ class LayoutLoad extends Layout implements LayoutLoadInterface {
     return $region_row;
   }
 
-  // Return row attributes
-  // Does this become rowContainerAttributes(), with a wrapper attributes method of rowWrapperAttributes() ?
+  /**
+   * {@inheritdoc}
+   */
   public function rowAttributes() {
     $variables = array();
     $active_row_regions = array();
@@ -101,14 +101,15 @@ class LayoutLoad extends Layout implements LayoutLoadInterface {
 
     // Set additional attributes for rows.
     foreach ($active_row_regions as $row_key => $row_values) {
-      //if (!empty($row_values['regions'])) {}
 
-      // If active regions set to true to print the row, basically a catch all condition.
+      // If active regions set to true, print the row.
       $variables[$row_key . '__regions']['active'] = TRUE;
 
       // Wrapper attributes.
       $variables[$row_key . '__wrapper_attributes'] = new Attribute;
-      $variables[$row_key . '__wrapper_attributes']['class'] = array('l-pr', 'page__row', 'pr-' . $row_key);
+      $variables[$row_key . '__wrapper_attributes']['class'] = array('l-pr', 'page__row', 'pr-' . str_replace('_', '-', $row_key));
+
+      // Wrapper attributes set in the layout yml file.
       foreach ($row_values['attributes'] as $attribute_type => $attribute_values) {
         if (is_array($attribute_values)) {
           $variables[$row_key . '__wrapper_attributes'][$attribute_type] = array(implode(' ', $attribute_values));
@@ -122,9 +123,9 @@ class LayoutLoad extends Layout implements LayoutLoadInterface {
       $variables[$row_key . '__container_attributes'] = new Attribute;
       $variables[$row_key . '__container_attributes']['class'] = array('l-rw', 'regions', 'container', 'pr-'. str_replace('_', '-', $row_key) . '__rw');
 
-      // Active Regions: "arc" is "active region count", this is number of active regions in this row on this page.
-      $count = count($row_values['regions']);
-      $variables[$row_key . '__container_attributes']['class'][] = 'arc--'. $count;
+      // Active Regions: "arc" is "active region count", this is number of
+      // active regions in this row on this page.
+      $variables[$row_key . '__container_attributes']['class'][] = 'arc--'. count($row_values['regions']);
 
       // Match each active region with its'corrosponding source order increment.
       foreach ($row_values['regions'] as $region) {
@@ -133,8 +134,9 @@ class LayoutLoad extends Layout implements LayoutLoadInterface {
         }
       }
 
-      // Has Regions: the "hr" class tells us which regions are active by source order (as per the layout markup yml),
-      // this allows us to push layout dependant on exactly which regions are active.
+      // Has Regions: the "hr" class tells us which regions are active by source
+      // order (as per the layout markup yml), this allows us to set layout
+      // depending on which regions are active.
       if (isset($row_has_regions[$row_key])) {
         $variables[$row_key . '__container_attributes']['class'][] =  'hr--' . implode('-', $row_has_regions[$row_key]);
       }
@@ -145,17 +147,17 @@ class LayoutLoad extends Layout implements LayoutLoadInterface {
 
           // Wrapper codes
           if (!empty($config_settings['page_classes_row_wrapper_' . $row_key])) {
-            $shortcodes = Tags::explode($config_settings['page_classes_row_wrapper_' . $row_key]);
-            foreach ($shortcodes as $class) {
-              $variables[$row_key . '__wrapper_attributes']['class'][] = Html::cleanCssIdentifier($class);
+            $wrappercodes = Tags::explode($config_settings['page_classes_row_wrapper_' . $row_key]);
+            foreach ($wrappercodes as $wrapperclass) {
+              $variables[$row_key . '__wrapper_attributes']['class'][] = Html::cleanCssIdentifier($wrapperclass);
             }
           }
 
           // Container codes
           if (!empty($config_settings['page_classes_row_container_' . $row_key])) {
-            $shortcodes = Tags::explode($config_settings['page_classes_row_container_' . $row_key]);
-            foreach ($shortcodes as $class) {
-              $variables[$row_key . '__container_attributes']['class'][] = Html::cleanCssIdentifier($class);
+            $containercodes = Tags::explode($config_settings['page_classes_row_container_' . $row_key]);
+            foreach ($containercodes as $containerclass) {
+              $variables[$row_key . '__container_attributes']['class'][] = Html::cleanCssIdentifier($containerclass);
             }
           }
         }
@@ -164,4 +166,5 @@ class LayoutLoad extends Layout implements LayoutLoadInterface {
 
     return $variables;
   }
+
 }

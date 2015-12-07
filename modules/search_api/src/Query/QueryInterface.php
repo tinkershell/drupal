@@ -18,6 +18,16 @@ use Drupal\search_api\IndexInterface;
 interface QueryInterface {
 
   /**
+   * Constant representing ascending sorting.
+   */
+  const SORT_ASC = 'ASC';
+
+  /**
+   * Constant representing descending sorting.
+   */
+  const SORT_DESC = 'DESC';
+
+  /**
    * Instantiates a new instance of this query class.
    *
    * @param \Drupal\search_api\IndexInterface $index
@@ -29,6 +39,10 @@ interface QueryInterface {
    *
    * @return static
    *   A query object to use.
+   *
+   * @throws \Drupal\search_api\SearchApiException
+   *   Thrown if a search on that index (or with those options) won't be
+   *   possible.
    */
   public static function create(IndexInterface $index, ResultsCacheInterface $results_cache, array $options = array());
 
@@ -81,12 +95,8 @@ interface QueryInterface {
    *   An array containing fulltext fields that should be searched.
    *
    * @return $this
-   *
-   * @throws \Drupal\search_api\SearchApiException
-   *   Thrown if one of the fields isn't a fulltext field.
    */
-  // @todo Allow calling with NULL, and maybe rename to setFulltextFields().
-  public function fields(array $fields);
+  public function setFulltextFields(array $fields = NULL);
 
   /**
    * Adds a subfilter to this query's filter.
@@ -130,14 +140,14 @@ interface QueryInterface {
    *   The field to sort by. The special fields 'search_api_relevance' (sort by
    *   relevance) and 'search_api_id' (sort by item id) may be used.
    * @param string $order
-   *   The order to sort items in – either 'ASC' or 'DESC'.
+   *   The order to sort items in – one of the SORT_* constants.
    *
    * @return $this
    *
-   * @throws \Drupal\search_api\SearchApiException
-   *   Thrown if the field is multi-valued or of a fulltext type.
+   * @see \Drupal\search_api\Query\QueryInterface::SORT_ASC
+   * @see \Drupal\search_api\Query\QueryInterface::SORT_DESC
    */
-  public function sort($field, $order = 'ASC');
+  public function sort($field, $order = self::SORT_ASC);
 
   /**
    * Adds a range of results to return.
@@ -231,13 +241,13 @@ interface QueryInterface {
   /**
    * Retrieves the fulltext fields that will be searched for the search keys.
    *
-   * @return string[]
+   * @return string[]|null
    *   An array containing the fields that should be searched for the search
-   *   keys.
+   *   keys, or NULL if all indexed fulltext fields should be used.
    *
-   * @see fields()
+   * @see setFulltextFields()
    */
-  public function &getFields();
+  public function &getFulltextFields();
 
   /**
    * Retrieves the filter object associated with this search query.

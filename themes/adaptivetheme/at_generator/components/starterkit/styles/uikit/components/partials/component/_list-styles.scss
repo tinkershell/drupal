@@ -1,6 +1,6 @@
 /**
  * List Styles
- ========================================================================== */
+ ============================================================================ */
 
 // Links inline, e.g. node and comment "links".
 ul {
@@ -11,33 +11,29 @@ ul {
   }
 
   &.inline {
-    @include list-horizontal($flow-to, $margin: (t: 0, r: 0, b: 0, l: $medium));
+    @include list-horizontal-inline('inline-block', $margin: (t: 0, r: 0, b: 0, l: 0));
 
     a {
       &:hover,
       &:focus {}
     }
-
-    [dir="rtl"] & li {
-      margin: 0 $medium 0 0;
-    }
   }
 }
 
 
-// Item lists are frequently used in Drupal by Views and
-// other modules that need to output a list of something,
-// sometimes with a title. We zero everything else as a
-// reset since item-lists are not usually bulletted etc.
+// Item lists are frequently used in Drupal by Views and other modules that need
+// to output a list of something, sometimes with a title.
 .item-list {
 
-  .title {
+  &__title {
     font-weight: $font-weight-bold;
   }
 
-  ul,
-  ol,
-  li {
+  &__list {
+    padding: 0;
+  }
+
+  &__item {
     list-style: none;
   }
 

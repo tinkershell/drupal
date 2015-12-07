@@ -102,7 +102,7 @@ class IndexListBuilder extends ConfigEntityListBuilder {
     $status_label = $entity->status() ? $this->t('Enabled') : $this->t('Disabled');
     $status_icon = array(
       '#theme' => 'image',
-      '#uri' => $entity->status() ? 'core/misc/icons/73b355/check.svg' : 'core/misc/icons/ea2800/error.svg',
+      '#uri' => $entity->status() ? 'core/misc/icons/73b355/check.svg' : 'core/misc/icons/e32700/error.svg',
       '#width' => 18,
       '#height' => 18,
       '#alt' => $status_label,
@@ -153,6 +153,7 @@ class IndexListBuilder extends ConfigEntityListBuilder {
       '#empty' => $entity_groups['lone_indexes'] ? '' : $this->t('There are no servers or indexes defined. For a quick start, we suggest you install the Database Search Defaults module.'),
       '#attributes' => array(
         'id' => 'search-api-entity-list',
+        'class' => array('search-api-entity-list'),
       ),
     );
     foreach ($entity_groups['servers'] as $server_groups) {

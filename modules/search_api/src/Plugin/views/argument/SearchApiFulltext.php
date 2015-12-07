@@ -7,8 +7,9 @@
 
 namespace Drupal\search_api\Plugin\views\argument;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\search_api\Plugin\views\query\SearchApiQuery;
 
 /**
  * Defines a contextual filter for doing fulltext searches.
@@ -37,7 +38,7 @@ class SearchApiFulltext extends SearchApiArgument {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
-    $form['help']['#markup'] = SafeMarkup::checkPlain($this->t('Note: You can change how search keys are parsed under "Advanced" > "Query settings".'));
+    $form['help']['#markup'] = Html::escape($this->t('Note: You can change how search keys are parsed under "Advanced" > "Query settings".'));
 
     $fields = $this->getFulltextFields();
     if (!empty($fields)) {
@@ -74,7 +75,7 @@ class SearchApiFulltext extends SearchApiArgument {
    */
   public function query($group_by = FALSE) {
     if ($this->options['fields']) {
-      $this->query->fields($this->options['fields']);
+      $this->query->setFulltextFields($this->options['fields']);
     }
     if ($this->options['conjunction'] != 'AND') {
       $this->query->setOption('conjunction', $this->options['conjunction']);
@@ -105,7 +106,17 @@ class SearchApiFulltext extends SearchApiArgument {
    */
   protected function getFulltextFields() {
     $fields = array();
-    $index = $this->query->getIndex();
+
+    if (!empty($this->query)) {
+      $index = $this->query->getIndex();
+    }
+    else {
+      $index = SearchApiQuery::getIndexFromTable($this->table);
+    }
+
+    if (!$index) {
+      return array();
+    }
 
     $fields_info = $index->getFields();
     foreach ($index->getFulltextFields() as $field_id) {

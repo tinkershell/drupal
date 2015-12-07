@@ -8,7 +8,6 @@
 namespace Drupal\search_api\Plugin\search_api\processor;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -247,6 +246,10 @@ class Highlight extends ProcessorPluginBase {
     $needs_extraction = array();
     foreach ($result_items as $item_id => $result_item) {
       $datasource_id = $result_item->getDatasourceId();
+      // Make sure this datasource even has any indexed fulltext fields.
+      if (empty($fulltext_fields[$datasource_id])) {
+        continue;
+      }
       /** @var \Drupal\search_api\Item\FieldInterface $field */
       foreach ($fulltext_fields[$datasource_id] as $field_id => $field) {
         if ($result_item->getField($field_id, FALSE)) {
@@ -409,7 +412,7 @@ class Highlight extends ProcessorPluginBase {
         // we are requiring a match on a word boundary, make sure $text starts
         // and ends with a space.
         $matches = array();
-        if (preg_match('/' . self::$boundary . $key . self::$boundary . '/iu', ' ' . $text . ' ', $matches, PREG_OFFSET_CAPTURE, $look_start[$key])) {
+        if (preg_match('/' . self::$boundary . preg_quote($key, '/') . self::$boundary . '/iu', ' ' . $text . ' ', $matches, PREG_OFFSET_CAPTURE, $look_start[$key])) {
           $found_position = $matches[0][1];
           $look_start[$key] = $found_position + 1;
           // Keep track of which keys we found this time, in case we need to
@@ -487,7 +490,7 @@ class Highlight extends ProcessorPluginBase {
     // Fetch text within the combined ranges we found.
     $out = array();
     foreach ($new_ranges as $from => $to) {
-      $out[] = SafeMarkup::checkPlain(substr($text, $from, $to - $from));
+      $out[] = Html::escape(substr($text, $from, $to - $from));
     }
     if (!$out) {
       return NULL;
@@ -532,7 +535,7 @@ class Highlight extends ProcessorPluginBase {
   protected function getEllipses() {
     // Combine the text chunks with "…" separators. The "…" needs to be
     // translated. Let translators have the … separator text as one chunk.
-    $ellipses = explode('!excerpt', $this->t('… !excerpt … !excerpt …'));
+    $ellipses = explode('@excerpt', $this->t('… @excerpt … @excerpt …'));
     return $ellipses;
   }
 

@@ -1,11 +1,13 @@
 /**
  * Fields
  * Common styles for field templates.
- * SEE: image and taxonomy field styles as these both have unqique
+ * SEE: image and taxonomy field styles as these both have unique
  * template html markup and selectors.
- ========================================================================== */
+ ============================================================================ */
 
 .field {
+  @include output-rhythm(margin-bottom, $medium);
+
   .field__items {}
   .field__item {}
 }
@@ -38,7 +40,8 @@
     }
   }
 
-  .field__items {
+  .field__items,
+  .field__item {
     display: inline-block;
   }
 }

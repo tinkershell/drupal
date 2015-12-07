@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Generate form elements for the Devel settings.
+ */
+
 // Development settings
 $form['devel'] = array(
   '#type' => 'details',
@@ -29,7 +34,7 @@ $form['devel']['settings_show_grid'] = array(
   '#type' => 'checkbox',
   '#title' => t('Show the grid'),
   '#default_value' => theme_get_setting('settings.show_grid', $theme),
-  '#description' => t('Show the grid. Your theme must include a CSS file named "show-grid.css" in the /css folder which should load the grid CSS or image file. All UIKit based themes have this file and will show a toggle icon in the bottom left corner of the screen - hover the icon to show the grid as an overlay. The default CSS grid overlay is not exact. Browsers have extra trouble with sub-pixel rounding on background images. This is meant for rough debugging, not for pixel-perfect measurements.'),
+  '#description' => t('Show the grid. Your theme must include a CSS file named "show-grid.css" in the /css folder which should load the grid CSS or image file. All UIKit based themes have this file and will show a toggle icon in the bottom left corner of the screen - hover the icon to show the grid as an overlay. The CSS grid overlay is an approximation. Browsers have extra trouble with sub-pixel rounding on background images. <b>This is meant for rough debugging, not for pixel-perfect measurements</b>.'),
 );
 
 // Debug layout
@@ -37,7 +42,7 @@ $form['devel']['settings_devel_layout'] = array(
   '#type' => 'checkbox',
   '#title' => t('Debug Layout <small>(hides all content, colorizes all rows and regions)</small>'),
   '#default_value' => theme_get_setting('settings.devel_layout', $theme),
-  '#description' => t('An agressive option that removes all content, hides the toolbar, and colorizes page rows and regions. Works with LiveReload.'),
+  '#description' => t('An aggressive option that removes all content, hides the toolbar, and colorizes page rows and regions. Works with LiveReload.'),
 );
 
 // Colorize regions.
@@ -45,7 +50,7 @@ $form['devel']['settings_devel_color_regions'] = array(
   '#type' => 'checkbox',
   '#title' => t('Colorize regions'),
   '#default_value' => theme_get_setting('settings.devel_color_regions', $theme),
-  '#description' => t('Add background color to regions. Also adds a margin-bottom for visual seperation.'),
+  '#description' => t('Add background color to regions. Also adds a margin-bottom for visual separation.'),
   '#states' => array(
     'disabled' => array('input[name="settings_devel_layout"]' => array('checked' => TRUE)),
   ),
