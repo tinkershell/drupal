@@ -1,5 +1,0 @@
-packery.group_list:
-  title: 'Packery'
-  description: 'Packery module settings configuration page.'
-  route_name: packery.group_list
-  parent: system.admin_config_ui

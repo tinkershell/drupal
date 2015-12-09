@@ -1,5 +1,0 @@
-packery.group_add:
-  route_name: packery.group_add
-  title: 'Add new group'
-  appears_on:
-    - packery.group_list
