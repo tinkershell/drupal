@@ -24,7 +24,7 @@
   border: none;
   padding: 8px 20px;
   color: #fff;
-  background: #c01700;
+  background: #5793f3;
   border-radius: 3px;
   -webkit-border-radius: 3px;
   cursor: pointer;
@@ -50,7 +50,7 @@ body {
   -webkit-font-smoothing: antialiased;
   font-size: 14px;
   color: #555555;
-  background: #f6f6f6;
+  background: #606060;
 }
 
 /* line 12, ../sass/html.scss */
@@ -67,14 +67,14 @@ header, nav, section, article, figure, aside, footer {
 
 /* line 20, ../sass/html.scss */
 a {
-  color: #555555;
+  color: #B88121;
 }
 
 /* line 23, ../sass/html.scss */
 a:hover, a:focus {
   outline: none;
   text-decoration: none;
-  color: #c01700;
+  color: #5793f3;
 }
 
 /* line 28, ../sass/html.scss */
@@ -119,14 +119,15 @@ img {
 input, button, select, textarea {
   padding: 6px;
   border: 1px solid #ddd;
+  outline: none;
 }
 
-/* line 61, ../sass/html.scss */
+/* line 62, ../sass/html.scss */
 label {
   font-weight: normal;
 }
 
-/* line 64, ../sass/html.scss */
+/* line 65, ../sass/html.scss */
 p {
   margin-bottom: 15px;
 }

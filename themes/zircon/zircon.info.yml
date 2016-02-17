@@ -3,8 +3,8 @@ type: theme
 base theme: classy
 description: 'A flexible, recolorable theme with many regions and a responsive, mobile-first layout.'
 package: Core
-# version: 8.0.0-rc1
-# core: 8.x
+version: 8.0.0
+core: 8.x
 libraries:
   - zircon/global-styling
 regions:
@@ -29,9 +29,3 @@ regions:
   panel_second_4: 'Panel second col 4'
   footer: Footer
 
-
-# Information added by Drupal.org packaging script on 2015-11-09
-version: '8.x-0.0-rc1'
-core: '8.x'
-project: 'zircon'
-datestamp: 1447086842
