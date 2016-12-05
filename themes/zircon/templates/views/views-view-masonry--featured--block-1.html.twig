@@ -1,0 +1,54 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a view of unformatted rows.
+ *
+ * Available variables:
+ * - title: The title of this group of rows. May be empty.
+ * - rows: A list of the view's row items.
+ *   - attributes: The row's HTML attributes.
+ *   - content: The row's content.
+ * - view: The view object.
+ * - default_row_class: A flag indicating whether default classes should be
+ *   used on rows.
+ *
+ * @see template_preprocess_views_view_unformatted()
+ *
+ * @ingroup themeable
+ *
+ * Sponsored by: www.freelance-drupal.com
+ */
+#}
+
+{% if title and grouping %}
+  <h3>{{ title }}</h3>
+  <div class="{{grouping_class}}">
+{% endif %}
+
+{% set counter = 0 %}
+
+{% for row in rows %}
+
+  {% set counter = counter + 1 %}
+  {%
+  set row_classes = [
+  default_row_class ? 'views-row',
+  ]
+  %}
+
+  <div{{ row.attributes.addClass(row_classes) }}>
+  {% if counter == 3 %}
+    <a href='http://ads.videomaker.com/delivery/ck.php?n=a8450910&amp;cb=12345' target='_blank'><img src='http://ads.videomaker.com/delivery/avw.php?zoneid=190&amp;cb=12345&amp;n=a8450910' border='0' alt='' /></a>
+  {% elseif counter == 6 %}
+    <a href='http://ads.videomaker.com/delivery/ck.php?n=a8450910&amp;cb=12345' target='_blank'><img src='http://ads.videomaker.com/delivery/avw.php?zoneid=84&amp;cb=12345&amp;n=a8450910' border='0' alt='' /></a>
+  {% elseif counter == 9 %}
+    <a href='http://ads.videomaker.com/delivery/ck.php?n=a8450910&amp;cb=12345' target='_blank'><img src='http://ads.videomaker.com/delivery/avw.php?zoneid=253&amp;cb=12345&amp;n=a8450910' border='0' alt='' /></a>
+  {% else %}
+    {{ row.content }}
+  {% endif %}
+  </div>
+{% endfor %}
+
+{% if grouping %}
+  </div>
+{% endif %}
